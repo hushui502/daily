@@ -1,0 +1,14 @@
+goos: windows
+goarch: amd64
+pkg: sync
+BenchmarkMapDeleteCollison/*sync_test.DeepCopyMap-8         	 8782714	       137 ns/op
+BenchmarkMapDeleteCollison/*sync_test.DeepCopyMap-8         	 8355504	       140 ns/op
+BenchmarkMapDeleteCollison/*sync_test.DeepCopyMap-8         	 8782542	       139 ns/op
+BenchmarkMapDeleteCollison/*sync_test.RWMutexMap-8          	16711136	        72.3 ns/op
+BenchmarkMapDeleteCollison/*sync_test.RWMutexMap-8          	16711555	        70.8 ns/op
+BenchmarkMapDeleteCollison/*sync_test.RWMutexMap-8          	17264348	        72.4 ns/op
+BenchmarkMapDeleteCollison/*sync.Map-8                      	13829648	        88.7 ns/op
+BenchmarkMapDeleteCollison/*sync.Map-8                      	12800095	        92.9 ns/op
+BenchmarkMapDeleteCollison/*sync.Map-8                      	12937753	        85.4 ns/op
+PASS
+ok  	sync	11.869s

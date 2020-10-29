@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/timestamp.proto";
+
+service Game {
+    rpc Connect (ConnectRequest) returns (ConnectResponse) {}
+    rpc Stream (stream Request) returns (stream Response) {}
+}
+
+// Shared message types.
+
+message Coordinate {
+    int32 x = 1;
+    int32 y = 2;
+}
+
+enum Direction {
+    UP = 0;
+    DOWN = 1;
+    LEFT = 2;
+    RIGHT = 3;
+    STOP = 4;
+}
+
+message Player {
+    string id = 1;
+    string name = 2;
+    Coordinate position = 3;
+    string icon = 4;
+}
+
+message Laser {
+    string id = 1;
+    Direction direction = 2;
+    google.protobuf.Timestamp startTime = 3;
+    Coordinate initialPosition = 4;
+    string ownerId = 5;
+}
+
+// Message actions.
+
+message Entity {
+    oneof entity {
+        Player player = 2;
+        Laser laser = 3;
+    }
+}
+
+message ConnectRequest {
+    string id = 1;
+    string name = 2;
+    string password = 3;
+}
+
+message ConnectResponse {
+    string token = 1;
+    repeated Entity entities = 2;
+}
+
+message Move {
+    Direction direction = 1;
+}
+
+message AddEntity {
+    Entity entity = 1;
+}
+
+message UpdateEntity {
+    Entity entity = 1;
+}
+
+message RemoveEntity {
+    string id = 1;
+}
+
+message PlayerRespawn {
+    Player player = 1;
+    string killedById = 2;
+}
+
+message RoundOver {
+    string roundWinnerId = 1;
+    google.protobuf.Timestamp newRoundAt = 2;
+}
+
+message RoundStart {
+    repeated Player players = 1;
+}
+
+// Wraps multiple message actions.
+
+message Request {
+    oneof action {
+        Move move = 1;
+        Laser laser = 2;
+    }
+}
+
+message Response {
+    oneof action {
+        AddEntity addEntity = 1;
+        UpdateEntity updateEntity = 2;
+        RemoveEntity removeEntity = 3;
+        PlayerRespawn playerRespawn = 4;
+        RoundOver roundOver = 5;
+        RoundStart roundStart = 6;
+    }
+}

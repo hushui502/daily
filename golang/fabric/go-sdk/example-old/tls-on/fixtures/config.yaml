@@ -1,0 +1,81 @@
+#本配置文件仅适用于开启TLS的fabric网络
+
+name: "example"
+
+version: 1.0.0
+
+client:
+  organization: org1
+  logging:
+    level: info
+  #指定crypto-config文件夹所在路径，路径为相对于项目根目录路径
+  cryptoconfig:
+    path: D:\project\go\src\awesomeProject2\fabric\go-sdk\example-old\tls-on\fixtures\crypto-config
+
+
+channels:
+  mychannel:
+    #    orderers:
+    #      - orderer.example.com
+    peers:
+      #根据实际情况填写组织中的节点名，默认的属性全为true.因此可以只写一个节点名
+      #节点名适用于entity matchers，该部分的节点名需要与organizations.peers列表相对应，否则报错
+      peer0.org1.example.com:
+
+
+
+
+
+
+organizations:
+  #组织名可以任取，但需要和SDK中指定的组织名相对应，在fabsdk.WithOrg()中用到
+  org1:
+    #mspID需要和fabric网络中定义的mspID相对应
+    mspid: Org1MSP
+    #证书路径为相对于crypto-config文件夹的路径（定义在client-crtptoconfig）
+    cryptoPath: D:\project\go\src\awesomeProject2\fabric\go-sdk\example-old\tls-on\fixtures\crypto-config\peerOrganizations\org1.example.com\users\User1@org1.example.com\msp
+    #列出该组织下的所有节点
+    peers:
+      - peer0.org1.example.com
+    #如果未启用CA，则可将该部分注释
+    certificateAuthorities:
+      - ca.org1.example.com
+
+
+orderers:
+  #排序节点的名字,该名字要去网络中的节点名字相同，不适用entity matchers
+  orderer.example.com:
+    tlsCACerts:
+      path: D:\project\go\src\awesomeProject2\fabric\go-sdk\example-old\tls-on\fixtures\crypto-config\ordererOrganizations\example.com\tlsca\tlsca.example.com-cert.pem
+
+
+peers:
+  #  该部分peer节点的名字不能通过entity matchers替换，要与网络中的节点名相对应
+  peer0.org1.example.com:
+    tlsCACerts:
+      path: D:\project\go\src\awesomeProject2\fabric\go-sdk\example-old\tls-on\fixtures\crypto-config\peerOrganizations\org1.example.com\tlsca\tlsca.org1.example.com-cert.pem
+
+#如果未启用CA，则可将该部分注释
+certificateAuthorities:
+  ca.org1.example.com:
+    tlsCACerts:
+      path: D:\project\go\src\awesomeProject2\fabric\go-sdk\example-old\tls-on\fixtures\crypto-config\peerOrganizations\org1.example.com\ca\ca.org1.example.com-cert.pem
+
+entityMatchers:
+  peer:
+    - pattern: (\w*)peer0.org1(\w*)
+      urlSubstitutionExp: 192.168.7.210:7051
+#      eventUrlSubstitutionExp: 192.168.7.210:7053
+      sslTargetOverrideUrlSubstitutionExp: peer0.org1.example.com
+      mappedHost: peer0.org1.example.com
+
+  orderer:
+    - pattern: (\w*)orderer.(\w*)
+      urlSubstitutionExp: 192.168.7.210:7050
+      sslTargetOverrideUrlSubstitutionExp: orderer.example.com
+      mappedHost: orderer.example.com
+
+#  certificateAuthorities:
+#    - pattern: (\w*)ca.org1.example.com(\w*)
+#      urlSubstitutionExp: http://192.168.7.210:7054
+#      mappedHost: ca.org1.example.com

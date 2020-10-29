@@ -1,0 +1,32 @@
+# toml file for goproxy
+
+title = "TOML config for goproxy"
+
+[server]
+port = ":80"
+reverse = true
+proxy_pass = ["127.0.0.1:6000", "127.0.0.1:7000", "127.0.0.1:8000", "127.0.0.1:9000"]
+# 0 - random, 1 - loop, 2 - power of two choices(p2c), 3 - hash, 4 - consistent hashing
+inverse_mode = 2
+auth = false
+cache = true
+cache_timeout = 60
+cache_type = "redis"
+log = 1
+log_path = "./logs"
+user = { agent = "proxy" }
+http_read_timeout = 10
+http_write_timeout = 10
+
+[redis]
+redis_host = "localhost:6379"
+redis_pass = ""
+max_idle = 5
+idle_timeout = 10
+max_active = 10
+
+[mem]
+capacity = 1000
+cache_replacement_policy = "LRU"
+
+

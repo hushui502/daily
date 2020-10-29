@@ -1,0 +1,15 @@
+goos: windows
+goarch: amd64
+pkg: awesomeProject2/inlineaction
+BenchmarkMax-8   	663304449	         1.82 ns/op
+BenchmarkMax-8   	667395610	         1.81 ns/op
+BenchmarkMax-8   	664447411	         1.82 ns/op
+BenchmarkMax-8   	667690458	         1.81 ns/op
+BenchmarkMax-8   	660941080	         1.80 ns/op
+BenchmarkMax-8   	664016870	         1.81 ns/op
+BenchmarkMax-8   	671264079	         1.80 ns/op
+BenchmarkMax-8   	668268654	         1.80 ns/op
+BenchmarkMax-8   	660194922	         1.84 ns/op
+BenchmarkMax-8   	661057228	         1.80 ns/op
+PASS
+ok  	awesomeProject2/inlineaction	14.063s

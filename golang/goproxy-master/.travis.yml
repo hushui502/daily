@@ -1,0 +1,23 @@
+language: go
+
+go:
+  - "1.10.x"
+  - "1.11.x"
+  - "1.12.x"
+  - "1.13.x"
+  - master
+
+env:
+  - GO111MODULE=on
+
+before_install:
+  - go get -t -v ./...
+
+services:
+  - redis-server
+
+script:
+  - go test -v ./test/...
+
+after_success:
+  - tail -n 100 ./test/logs/*.log.*
