@@ -1,5 +1,6 @@
 package lambda;
 
+import javax.swing.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -75,6 +76,9 @@ public class LambdaThread {
         System.out.println(statistics.getAverage());
         System.out.println(statistics.getCount());
 
+        // button ActionListener
+        JButton button = new JButton();
+        button.addActionListener(event -> System.out.println("button clicked"));
     }
 }
 
