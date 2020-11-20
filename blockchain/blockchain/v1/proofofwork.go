@@ -6,20 +6,21 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"strconv"
 )
 
 var (
 	maxNonce = math.MaxInt64
 )
 
-const targetBits = 24
+const targetBits = 16
 
+// ProofOfWork represents a proof-of-work
 type ProofOfWork struct {
-	block *Block
+	block  *Block
 	target *big.Int
 }
 
+// NewProofOfWork builds and returns a ProofOfWork
 func NewProofOfWork(b *Block) *ProofOfWork {
 	target := big.NewInt(1)
 	target.Lsh(target, uint(256-targetBits))
@@ -27,10 +28,6 @@ func NewProofOfWork(b *Block) *ProofOfWork {
 	pow := &ProofOfWork{b, target}
 
 	return pow
-}
-
-func IntToHex(n int64) []byte {
-	return []byte(strconv.FormatInt(n, 16))
 }
 
 func (pow *ProofOfWork) prepareData(nonce int) []byte {
@@ -48,29 +45,34 @@ func (pow *ProofOfWork) prepareData(nonce int) []byte {
 	return data
 }
 
+// Run performs a proof-of-work
 func (pow *ProofOfWork) Run() (int, []byte) {
 	var hashInt big.Int
 	var hash [32]byte
 	nonce := 0
 
-	fmt.Printf("Mining the block containing \"%s\"\n", pow.block.Data)
-
+	fmt.Printf("Mining a new block")
 	for nonce < maxNonce {
 		data := pow.prepareData(nonce)
-		hash := sha256.Sum256(data)
+
+		hash = sha256.Sum256(data)
+		if math.Remainder(float64(nonce), 100000) == 0 {
+			fmt.Printf("\r%x", hash)
+		}
 		hashInt.SetBytes(hash[:])
 
 		if hashInt.Cmp(pow.target) == -1 {
-			fmt.Printf("\r%x", hash)
 			break
 		} else {
 			nonce++
 		}
 	}
 	fmt.Print("\n\n")
+
 	return nonce, hash[:]
 }
 
+// Validate validates block's PoW
 func (pow *ProofOfWork) Validate() bool {
 	var hashInt big.Int
 
@@ -82,27 +84,3 @@ func (pow *ProofOfWork) Validate() bool {
 
 	return isValid
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
