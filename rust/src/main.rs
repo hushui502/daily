@@ -1,46 +1,19 @@
-use std::collections::HashMap;
+use rustproject::{NewArticle, Summary, Tweet};
 
 fn main() {
-    let mut v = vec![1, 2, 3];
-    let third: &i32 = &v[2];
-    println!("The third element is {}", third);
+    let article = NewArticle {
+        headline: String::from("new headline"),
+        author: String::from("hufan"),
+        location: String::from("china"),
+        content: "".to_string(),
+    };
 
-    match v.get(0) {
-        Some(x) => println!("The third element is {}", x),
-        None => println!("There is no third element.")
-    }
+    println!("1 new article: {}", article.summarize());
 
-    for i in &mut v {
-        *i += 10;
-        println!("{}", i)
-    }
-
-
-    enum SpreadsheetCell {
-        Int(i32),
-        Float(f64),
-        Text(String),
-    }
-
-    let row = vec![
-        SpreadsheetCell::Int(3),
-        SpreadsheetCell::Text(String::from("blue")),
-        SpreadsheetCell::Float(10.22),
-    ];
-
-
-    let text = "hello world   beijing hufan ";
-    let mut map = HashMap::new();
-
-    for word in text.split_whitespace() {
-        let count = map.entry(word).or_insert(0);
-        *count += 1;
-    }
-
-    println!("{:?}", map);
-
-    panic!("cash down")
+    notify(article)
 
 }
 
-
+pub fn notify(item: impl Summary) {
+    println!("breaking news! {}", item.summarize())
+}
