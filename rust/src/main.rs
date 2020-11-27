@@ -1,29 +1,74 @@
+use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
+use crate::List::{Cons, Nil};
+use std::ops::Deref;
+use std::rc::{Rc, Weak};
+use std::cell::{RefCell, Ref};
+use std::sync::{mpsc, Mutex, Arc};
+use rustproject::Screen;
 
 fn main() {
-    let simulated_user_specified_value = 10;
-    let simulated_random_number = 7;
-
-    generate_workout(
-        simulated_user_specified_value,
-        simulated_random_number
-    );
-
-    // let example_closure = |x| x;
-    // let s = example_closure(String::from("hello"));
-    // let n = example_closure(3);
-
-
+    let mut post = Post::new();
 }
 
-struct Cacher<T> where T: Fn(u32) -> u32 {
+
+#[derive(Debug)]
+struct Node {
+    value: i32,
+    parent: RefCell<Weak<Node>>,
+    children: RefCell<Vec<Rc<Node>>>,
+}
+
+
+
+
+
+#[derive(PartialEq, Debug)]
+struct CustomSmartPointer {
+    data: String
+}
+
+impl Drop for CustomSmartPointer {
+    fn drop(&mut self) {
+        println!("Dropping CustomSmartPointer with data {}", self.data)
+    }
+}
+
+struct MyBox<T>(T);
+
+
+impl<T> Deref for MyBox<T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        &self.0
+    }
+}
+
+enum Message {
+    Quit,
+    Move{ x: i32, y: i32 },
+    Write(String),
+    ChangeColor
+}
+
+enum List {
+    Cons(Rc<RefCell<i32>>, Rc<List>),
+    Nil,
+}
+
+struct Cacher<T>
+where
+    T: Fn(u32) -> u32,
+{
     calculation: T,
-    value: Option<u32>
+    value: Option<u32>,
 }
 
 impl<T> Cacher<T>
-    where T: Fn(u32) -> u32
+where
+    T: Fn(u32) -> u32,
 {
     fn new(calculation: T) -> Cacher<T> {
         Cacher {
@@ -39,7 +84,7 @@ impl<T> Cacher<T>
                 let v = (self.calculation)(arg);
                 self.value = Some(v);
                 v
-            },
+            }
         }
     }
 }
@@ -57,14 +102,8 @@ fn generate_workout(intensity: u32, random_number: u32) {
     });
 
     if intensity < 25 {
-        println!(
-            "Today, do {} pushups!",
-            expensive_result.value(intensity)
-        );
-        println!(
-            "Next, do {} situps!",
-            expensive_result.value(intensity)
-        );
+        println!("Today, do {} pushups!", expensive_result.value(intensity));
+        println!("Next, do {} situps!", expensive_result.value(intensity));
     } else {
         if random_number == 3 {
             println!("Take a break today!Remeber to stay hydrated!")
