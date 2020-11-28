@@ -1,127 +1,42 @@
-use std::collections::HashMap;
-use std::thread;
+use std::net::{TcpListener, TcpStream};
+use std::io::{Read, Write};
+use std::{fs, thread};
 use std::time::Duration;
-use crate::List::{Cons, Nil};
-use std::ops::Deref;
-use std::rc::{Rc, Weak};
-use std::cell::{RefCell, Ref};
-use std::sync::{mpsc, Mutex, Arc};
-use rustproject::Screen;
+use rustproject::ThreadPool;
 
 fn main() {
-    let mut post = Post::new();
-}
+    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    let pool = ThreadPool::new(4);
 
-
-#[derive(Debug)]
-struct Node {
-    value: i32,
-    parent: RefCell<Weak<Node>>,
-    children: RefCell<Vec<Rc<Node>>>,
-}
-
-
-
-
-
-#[derive(PartialEq, Debug)]
-struct CustomSmartPointer {
-    data: String
-}
-
-impl Drop for CustomSmartPointer {
-    fn drop(&mut self) {
-        println!("Dropping CustomSmartPointer with data {}", self.data)
+    for stream in listener.incoming() {
+        let stream = stream.unwrap();
+        pool.execute(|| {
+            handle_connection(stream)
+        });
     }
 }
 
-struct MyBox<T>(T);
+fn handle_connection(mut stream: TcpStream) {
+    let mut buffer = [0; 512];
+    stream.read(&mut buffer).unwrap();
 
+    let get = b"GET / HTTP/1.1\r\n";
+    let sleep = b"GET /sleep HTTP/1.1\r\n";
 
-impl<T> Deref for MyBox<T> {
-    type Target = T;
-
-    fn deref(&self) -> &T {
-        &self.0
-    }
-}
-
-enum Message {
-    Quit,
-    Move{ x: i32, y: i32 },
-    Write(String),
-    ChangeColor
-}
-
-enum List {
-    Cons(Rc<RefCell<i32>>, Rc<List>),
-    Nil,
-}
-
-struct Cacher<T>
-where
-    T: Fn(u32) -> u32,
-{
-    calculation: T,
-    value: Option<u32>,
-}
-
-impl<T> Cacher<T>
-where
-    T: Fn(u32) -> u32,
-{
-    fn new(calculation: T) -> Cacher<T> {
-        Cacher {
-            calculation,
-            value: None,
-        }
-    }
-
-    fn value(&mut self, arg: u32) -> u32 {
-        match self.value {
-            Some(v) => v,
-            None => {
-                let v = (self.calculation)(arg);
-                self.value = Some(v);
-                v
-            }
-        }
-    }
-}
-
-fn simulated_expensive_calculation(intensity: u32) -> u32 {
-    thread::sleep(Duration::from_secs(2));
-    intensity
-}
-
-fn generate_workout(intensity: u32, random_number: u32) {
-    let mut expensive_result = Cacher::new(|num| {
-        println!("calculating slowly...");
-        thread::sleep(Duration::from_secs(2));
-        num
-    });
-
-    if intensity < 25 {
-        println!("Today, do {} pushups!", expensive_result.value(intensity));
-        println!("Next, do {} situps!", expensive_result.value(intensity));
+    let (status_line, filename) = if buffer.starts_with(get) {
+        ("HTTP/1.1 200 OK\r\n\r\n", "hello.html")
+    } else if buffer.starts_with(sleep) {
+        thread::sleep(Duration::from_secs(5));
+        ("HTTP/1.1 200 OK\r\n\r\n", "hello.html")
     } else {
-        if random_number == 3 {
-            println!("Take a break today!Remeber to stay hydrated!")
-        } else {
-            println!(
-                "Today, run for {} minutes!",
-                expensive_result.value(intensity)
-            )
-        }
-    }
-}
+        ("HTTP/1.1 404 NOT FOUND\r\n\r\n", "404.html")
+    };
 
-#[test]
-fn call_with_different_values() {
-    let mut c = Cacher::new(|a| a);
 
-    let v1 = c.value(1);
-    let v2 = c.value(2);
+    let contents = fs::read_to_string(filename).unwrap();
 
-    assert_eq!(v2, 2)
+    let response = format!("{}{}", status_line, contents);
+
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
 }
