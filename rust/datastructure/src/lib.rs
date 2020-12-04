@@ -4,3 +4,6 @@ pub mod stack;
 pub mod queue;
 pub mod trie;
 pub mod heap;
+pub mod build_heap;
+pub mod bubble_sort;
+pub mod hash_table;
