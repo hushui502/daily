@@ -17,6 +17,7 @@ require (
 	github.com/mitchellh/mapstructure v0.0.0-20180220230111-00c29f56e238 // indirect
 	github.com/onsi/ginkgo v1.10.3 // indirect
 	github.com/onsi/gomega v1.7.1 // indirect
+	github.com/panjf2000/goproxy v1.0.1
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/pelletier/go-toml v0.0.0-20180323185243-66540cf1fcd2 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
