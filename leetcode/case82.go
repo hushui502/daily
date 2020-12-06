@@ -5,7 +5,7 @@ func buildTree(preorder []int, inorder []int) *TreeNode {
 	for i := 0; i < len(inorder); i++ {
 		inPos[inorder[i]] = i
 	}
-
+	return buildPreIn2TreeDFS(preorder, 0, len(preorder)-1, 0, inPos)
 	
 }
 
