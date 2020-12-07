@@ -11,26 +11,26 @@ type PrepareMsg struct {
 }
 
 type PromiseMsg struct {
-	AcceptorAddr string
-	ProposeID float32
-	Success bool
-	AcceptedID float32
+	AcceptorAddr  string
+	ProposeID     float32
+	Success       bool
+	AcceptedID    float32
 	AcceptedValue interface{}
 }
 
 type AcceptMsg struct {
-	ProposeID float32
+	ProposeID    float32
 	AcceptorAddr string
-	Value interface{}
+	Value        interface{}
 }
 
 type AcceptedMsg struct {
-	ProposeID float32
+	ProposeID    float32
 	AcceptorAddr string
-	Success bool
+	Success      bool
 }
 
-type EmptyMsg struct {}
+type EmptyMsg struct{}
 
 func callRpc(peerAddr, roleService, method string, arg interface{}, reply interface{}) error {
 	c, err := rpc.Dial("tcp", peerAddr)
@@ -39,7 +39,7 @@ func callRpc(peerAddr, roleService, method string, arg interface{}, reply interf
 	}
 	defer c.Close()
 
-	err = c.Call(roleService + "." + method, arg, reply)
+	err = c.Call(roleService+"."+method, arg, reply)
 	if err != nil {
 		return err
 	}
@@ -71,6 +71,6 @@ var loglevel = 1
 
 func logPrint(format string, a ...interface{}) {
 	if loglevel == 1 {
-		fmt.Printf(format + "\n", a...)
+		fmt.Printf(format+"\n", a...)
 	}
 }

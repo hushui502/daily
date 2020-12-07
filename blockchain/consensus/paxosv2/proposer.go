@@ -7,14 +7,14 @@ import (
 )
 
 type Proposer struct {
-	mu sync.Mutex
-	me int	// proposer编号，提案者1， 2， 3...
-	acceptorPeers []string	// acceptor的addr
-	proposerID float32 // 提案号
-	currentValue interface{}
-	highestAcceptedID float32 // 收到acceptor返回的最高的接受的proposerID
+	mu                   sync.Mutex
+	me                   int      // proposer编号，提案者1， 2， 3...
+	acceptorPeers        []string // acceptor的addr
+	proposerID           float32  // 提案号
+	currentValue         interface{}
+	highestAcceptedID    float32 // 收到acceptor返回的最高的接受的proposerID
 	highestAcceptedValue interface{}
-	decidedValue interface{}
+	decidedValue         interface{}
 }
 
 func (p *Proposer) close() {}
@@ -163,7 +163,7 @@ func (p *Proposer) runTwoPhase() {
 func (p *Proposer) prepare() PrepareMsg {
 	p.mu.Lock()
 	proposerID := generateNumber(p.me, p.proposerID)
-	msg := PrepareMsg{ProposeID:proposerID}
+	msg := PrepareMsg{ProposeID: proposerID}
 	p.proposerID = proposerID
 	p.mu.Unlock()
 
@@ -173,8 +173,8 @@ func (p *Proposer) prepare() PrepareMsg {
 func (p *Proposer) accept() AcceptMsg {
 	p.mu.Lock()
 	msg := AcceptMsg{
-		ProposeID:    p.proposerID,
-		Value:        p.currentValue,
+		ProposeID: p.proposerID,
+		Value:     p.currentValue,
 	}
 	if p.highestAcceptedValue != nil {
 		msg.Value = p.highestAcceptedValue
@@ -201,7 +201,7 @@ func (p *Proposer) sendPrepare(peerAddr string, msg *PrepareMsg) (*PromiseMsg, e
 }
 
 func (p *Proposer) sendAccept(peerAddr string, msg *AcceptMsg) (*AcceptedMsg, error) {
-	reply := new(AcceptMsg)
+	reply := new(AcceptedMsg)
 	err := callRpc(peerAddr, "Acceptor", "RecieveAccept", msg, reply)
 
 	return reply, err
