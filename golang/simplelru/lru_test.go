@@ -69,3 +69,139 @@ func TestLRU(t *testing.T) {
 		t.Fatalf("should contain nothing")
 	}
 }
+
+func TestLRU_GetOldest_RomoveOldest(t *testing.T) {
+	l, err := NewLRU(128, nil)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+
+	for i := 0; i < 256; i++ {
+		l.Add(i, i)
+	}
+	k, _, ok := l.GetOldest()
+	if !ok {
+		t.Fatalf("missing")
+	}
+	if k.(int) != 128 {
+		t.Fatalf("bad: %v", k)
+	}
+
+	k, _, ok = l.RemoveOldest()
+	if !ok {
+		t.Fatalf("missing")
+	}
+	if k.(int) != 128 {
+		t.Fatalf("bad: %v", k)
+	}
+
+	k, _, ok = l.RemoveOldest()
+	if !ok {
+		t.Fatalf("missing")
+	}
+	if k.(int) != 129 {
+		t.Fatalf("bad: %v", k)
+	}
+
+	k, _, ok = l.GetOldest()
+	if !ok {
+		t.Fatalf("missing")
+	}
+	if k.(int) != 130 {
+		t.Fatalf("bad: %v", k)
+	}
+}
+
+// Test that Add returns true/false if an eviction occurred
+func TestLRU_Add(t *testing.T) {
+	evictCounter := 0
+	onEvicted := func(k interface{}, v interface{}) {
+		evictCounter++
+	}
+
+	l, err := NewLRU(1, onEvicted)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+
+	if l.Add(1, 1) == true || evictCounter != 0 {
+		t.Errorf("should not have an eviction")
+	}
+	if l.Add(2, 2) == false || evictCounter != 1 {
+		t.Errorf("should have an eviction")
+	}
+}
+
+func TestLRU_Contains(t *testing.T) {
+	l, err := NewLRU(2, nil)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+
+	l.Add(1, 1)
+	l.Add(2, 2)
+	if !l.Contains(1) {
+		t.Errorf("1 should be contained")
+	}
+
+	l.Add(3, 3)
+	if l.Contains(1) {
+		t.Errorf("Contains should not have updated recent-ness of 1")
+	}
+}
+
+func TestLRU_Peek(t *testing.T) {
+	l, err := NewLRU(2, nil)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+
+	l.Add(1, 1)
+	l.Add(2, 2)
+	if v, ok := l.Peek(1); !ok || v != 1 {
+		t.Errorf("1 should be set to 1: %v, %v", v, ok)
+	}
+
+	l.Add(3, 3)
+	if l.Contains(1) {
+		t.Errorf("should not have updated recent-ness of 1")
+	}
+}
+
+func TestLRU_Resize(t *testing.T) {
+	onEvictCounter := 0
+	onEvicted := func(k interface{}, v interface{}) {
+		onEvictCounter++
+	}
+	l, err := NewLRU(2, onEvicted)
+	if err != nil {
+		t.Fatalf("err: %v", err)
+	}
+
+	// Downsize
+	l.Add(1, 1)
+	l.Add(2, 2)
+	evicted := l.Resize(1)
+	if evicted != 1 {
+		t.Errorf("1 element should have been evicted: %v", evicted)
+	}
+	if onEvictCounter != 1 {
+		t.Errorf("onEvicted should have been called 1 time: %v", onEvictCounter)
+	}
+
+	l.Add(3, 3)
+	if l.Contains(1) {
+		t.Errorf("Element 1 should have been evicted")
+	}
+
+	// Upsize
+	evicted = l.Resize(2)
+	if evicted != 0 {
+		t.Errorf("0 elements should have been evicted: %v", evicted)
+	}
+
+	l.Add(4, 4)
+	if !l.Contains(3) || !l.Contains(4) {
+		t.Errorf("Cache should have contained 2 elements")
+	}
+}
