@@ -9,6 +9,8 @@ type LRUCache interface {
 
 	Peek(key interface{}) (value interface{}, ok bool)
 
+	Remove(key interface{}) bool
+	
 	// key value success
 	RemoveOldest() (interface{}, interface{}, bool)
 
