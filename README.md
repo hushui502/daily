@@ -43,3 +43,5 @@
 - [crawler](https://github.com/hushui502/daily/tree/master/golang/iloveck)
 - [sniff](https://github.com/hushui502/daily/tree/master/golang/gosniff)
 - [paxosV2](https://github.com/hushui502/daily/tree/master/blockchain/consensus/paxosv2)
+- [netstat tool](https://github.com/hushui502/daily/tree/master/golang/go-netstat)
+- [lru](https://github.com/hushui502/daily/tree/master/golang/lru)
