@@ -1,5 +1,3 @@
-### The content includes
-
 * Programming language
 	- Golang
     - Rust
