@@ -7,3 +7,6 @@ pub mod heap;
 pub mod build_heap;
 pub mod bubble_sort;
 pub mod hash_table;
+pub mod sqrtx;
+pub mod binary_search;
+pub mod binary_tree;
