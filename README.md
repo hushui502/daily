@@ -2,11 +2,12 @@
 	- Golang
     - Rust
     - Lua
-* Middleware and Frame
+    - C
+* Middleware/Framework/Cloud Native
 	- Web
     - Serverless
+    - Kubernetes
 * Blockchain
-	- EOS
     - ETH
     - Blockchain
     - Consensus
@@ -43,3 +44,7 @@
 - [paxosV2](https://github.com/hushui502/daily/tree/master/blockchain/consensus/paxosv2)
 - [netstat tool](https://github.com/hushui502/daily/tree/master/golang/go-netstat)
 - [lru](https://github.com/hushui502/daily/tree/master/golang/lru)
+- [tcp/ip](https://github.com/hushui502/daily/tree/master/golang/lectcp)
+- [M to M chan](https://github.com/hushui502/daily/tree/master/golang/gochan)
+
+
