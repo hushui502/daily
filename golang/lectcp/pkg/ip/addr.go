@@ -56,3 +56,5 @@ func (a Address) Uint32() uint32 {
 func (a Address) IsEmpty() bool {
 	return a == EmptyAddress
 }
+
+
