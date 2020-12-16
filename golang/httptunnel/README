@@ -1,0 +1,16 @@
+
+a tool to tunnel TCP over HTTP
+
+inspired: https://github.com/nf/gohttptun
+
+Example usage:
+
+1. Run server
+
+    ./server
+
+2. Run client
+   ./client -http=serverAddress:8888
+
+3. connect via ssh to localhost:2222 on the local machine:
+    ssh -p 2222 username@127.0.0.1
