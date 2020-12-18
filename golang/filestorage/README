@@ -1,0 +1,11 @@
+# filestorage
+
+a file storage server
+
+support storage:
+- local storage
+- aliyun oss storage
+
+
+api
+- upload

@@ -1,0 +1,78 @@
+# filestorage
+
+### introduction
+  a file storage server
+
+
+### support storage:
+- local storage
+- aliyun oss storage
+
+### Api
+
+- upload
+  ```
+  /upload (select default storage)
+  /upload/local (select local host storage)
+  /upload/oss (select aliyun oss)
+  ```
+- download
+  ```
+  /file/{filename}
+  /download/oss/{filename}
+  /download/local/{filename}
+  ```
+
+  ### Config file
+  ```
+base:
+  listen_address: ":8000"
+  upload_dir: "tmp"
+  default_storage: "local"
+
+basic_path:
+  enable: false
+  username: "*"
+  password: "*"
+
+oss:
+  enable: false
+  public: false
+  endpoint: ""
+  access_key: ""
+  access_secret: ""
+  bucket_name: ""
+  ```
+
+  ### Run
+
+  dev run
+  ```
+  make run
+  ```
+
+  ### Example
+
+  upload
+  ```
+  $> curl -F file=@tt.png http://localhost:8080/upload/local
+
+filename: 643616221782092862
+download: http://localhost:8080/download/local/643616221782092862
+  ```
+
+  download
+  ```
+  $> curl -o {filename} http://localhost:8080/download/local/{filename}
+  ```
+
+  basicauth
+  ```
+  $> curl --user user:password -F file=@tt.png http://localhost:8080/upload/local
+
+  $> curl --user user:password http://localhost:8080/download/local/{filename}
+  or
+  $> wget --http-user=user --http-password=password http://localhost:8080/download/local/{filename}
+  ```
+
+  inspired by https://github.com/rfyiamcool/fileman

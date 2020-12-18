@@ -51,3 +51,5 @@
 - [M to M chan](https://github.com/hushui502/daily/tree/master/golang/gochan)
 - [dl](https://github.com/hushui502/daily/tree/master/golang/dl)
 - [ratelimit](https://github.com/hushui502/daily/tree/master/golang/ratelimit)
+- [filestorage](https://github.com/hushui502/daily/tree/master/golang/filestorage)
+- [ffcron](https://github.com/hushui502/daily/tree/master/golang/ffcron)
