@@ -1,0 +1,17 @@
+def clip(text, max_len=80):
+    """
+    在max_len 前面或者后面第一个空格截断文本
+    """
+    end = True
+    if len(text) > max_len:
+        space_before = text.rfind(' ', 0, max_len)
+        if space_before >= 0:
+            end = space_before
+        else:
+            space_after = text.rfind(' ', max_len)
+            if space_after >= 0:
+                end = space_after
+    if end is None:
+        end = len(text)
+
+    return text[:end].rstrip()
