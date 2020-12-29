@@ -6,6 +6,7 @@ import numbers
 import reprlib
 import itertools
 
+
 class Vector:
     typecode = 'd'
 
@@ -28,8 +29,18 @@ class Vector:
                 bytes(self._components))
 
     def __eq__(self, other):
-        return (len(self) == len(other) and
-                all(a == b for a, b in zip(self, other)))
+        if isinstance(other, Vector):
+            return (len(self) == len(other) and
+                    all(a == b for a, b in zip(self, other)))
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        eq_result = self == other
+        if eq_result is NotImplemented:
+            return NotImplemented
+        else:
+            return not eq_result
 
     def __hash__(self):
         hashes = (hash(x) for x in self)
@@ -74,7 +85,7 @@ class Vector:
 
     def angle(self, n):
         r = math.sqrt(sum(x * x for x in self[:n]))
-        a = math.atan2(r, self[n-1])
+        a = math.atan2(r, self[n - 1])
         if (n == len(self) - 1) and (self[-1] < 0):
             return math.pi * 2 - a
         else:
@@ -94,7 +105,6 @@ class Vector:
             outer_fmt = '({})'
         components = (format(c, format_spec) for c in coords)
         return outer_fmt.format(', '.join(components))
-
 
     @classmethod
     def frombytes(cls, octets):
@@ -120,3 +130,12 @@ class Vector:
 
     def __rmul__(self, scalar):
         return self * scalar
+
+    def __matmul__(self, other):
+        try:
+            return sum(a * b for a, b in zip(self, other))
+        except TypeError:
+            return NotImplemented
+
+    def __rmatmul__(self, other):
+        return self @ other
