@@ -1,0 +1,340 @@
+## 数据竞争
+多个goroutine对同一个变量进行修改会发生数据竞争，因为goroutine其实就是借助线程来实际操作，而线程又是共享同一进程的地址空间，所以我们要尽量避免竞争代码。
+
+写者无意，竞争却不这么认为，所以要检测。
+
+我们只需要在执行测试或者是编译的时候加上 -race 的 flag 就可以开启数据竞争的检测
+```
+go test -race ./...
+go build -race
+```
+
+不建议生产环境的build开启数据竞争检测，因为会造成性能损失。
+
+建议执行单元测试始终开启数据竞争检测。
+
+### 案例一
+```
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+var wg sync.WaitGroup
+var counter int
+
+func main() {
+	for i := 0; i < 10000; i++ {
+		run()
+	}
+}
+
+func run() {
+	for i := 1; i <= 2; i++ {
+		wg.Add(1)
+		go routine(i)
+	}
+
+	wg.Wait()
+	fmt.Printf("Final Counter: %d\n", counter)
+}
+
+func routine(id int) {
+	for i := 0; i < 2; i++ {
+		value := counter
+		value += 1
+		counter = value
+	}
+
+	wg.Done()
+}
+
+```
+
+输出结果每次都不一致。
+
+```
+Final Counter: 39990
+Final Counter: 39994
+Final Counter: 39998
+```
+因为我们的使用goroutine，同时multiple操作对counter变量。
+
+#### 提前检测
+```
+go run -race ./race.go
+```
+
+```
+Final Counter: 399956
+Final Counter: 399960
+Found 1 data race(s)
+exit status 66
+```
+虽然能看出存在data race，但是看不出更多的信息，我们更想要它的定位。
+![](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/8a23233222844daaa6d12ae95f53510e~tplv-k3u1fbpfcp-watermark.image)
+
+```
+➜  datarace GORACE="halt_on_error=1 strip_path_prefix=/home/ll/project/Go-000/Week03/blog/03_sync/01_data_race" go run -race ./race.go
+==================
+WARNING: DATA RACE
+Read at 0x0000006522c0 by goroutine 7:
+  main.routine()
+      /root/test/datarace/race.go:29 +0x47
+
+Previous write at 0x0000006522c0 by goroutine 8:
+  main.routine()
+      /root/test/datarace/race.go:31 +0x63
+
+Goroutine 7 (running) created at:
+  main.run()
+      /root/test/datarace/race.go:20 +0x75
+  main.main()
+      /root/test/datarace/race.go:13 +0x38
+
+Goroutine 8 (finished) created at:
+  main.run()
+      /root/test/datarace/race.go:20 +0x75
+  main.main()
+      /root/test/datarace/race.go:13 +0x38
+==================
+exit status 66
+```
+这就比较清晰了，大致的竞争位置定位在了启动goroutine的位置，也符合我们的预期。
+
+### 案例二
+
+在循环中启动goroutine引用临时变量
+```
+func main() {
+	var wg sync.WaitGroup
+	wg.Add(5)
+	for i := 0; i < 5; i++ {
+		go func() {
+			fmt.Println(i) // Not the 'i' you are looking for.
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}
+```
+这里会输出5个5，原因是for循环比go func()要快的多，然而go func()是共享i这个变量的，所以i++到5，go func()或许才开始执行。
+
+如何处理？将i作为参数传入即可，这样每个goroutine拿到的都是拷贝后的数据。
+
+### 案例三
+不小心将变量共享
+```
+func main() {
+	ParallelWrite([]byte("xxx"))
+}
+
+// ParallelWrite writes data to file1 and file2, returns the errors.
+func ParallelWrite(data []byte) chan error {
+	res := make(chan error, 2)
+	f1, err := os.Create("/tmp/file1")
+	if err != nil {
+		res <- err
+	} else {
+		go func() {
+			// This err is shared with the main goroutine,
+			// so the write races with the write below.
+			_, err = f1.Write(data)
+			res <- err
+			f1.Close()
+		}()
+	}
+	f2, err := os.Create("/tmp/file2") // The second conflicting write to err.
+	if err != nil {
+		res <- err
+	} else {
+		go func() {
+			_, err = f2.Write(data)
+			res <- err
+			f2.Close()
+		}()
+	}
+	return res
+}
+```
+go run -race ./main.go
+```
+==================
+WARNING: DATA RACE
+Write at 0x00c0000a01a0 by goroutine 7:
+  main.ParallelWrite.func1()
+      /home/ll/project/Go-000/Week03/blog/03_data_race/03/main.go:19 +0x94
+
+Previous write at 0x00c0000a01a0 by main goroutine:
+  main.ParallelWrite()
+      /home/ll/project/Go-000/Week03/blog/03_data_race/03/main.go:24 +0x1dd
+  main.main()
+      /home/ll/project/Go-000/Week03/blog/03_data_race/03/main.go:6 +0x84
+
+Goroutine 7 (running) created at:
+  main.ParallelWrite()
+      /home/ll/project/Go-000/Week03/blog/03_data_race/03/main.go:16 +0x336
+  main.main()
+      /home/ll/project/Go-000/Week03/blog/03_data_race/03/main.go:6 +0x84
+==================
+Found 1 data race(s)
+exit status 66
+```
+原因就是我们在goroutine中的err使用的是一个共享err，解决方式就是在goroutine中每次新开一个临时变量。
+```
+...
+_, err := f1.Write(data)
+...
+_, err := f2.Write(data)
+...
+```
+
+### 案例四
+不受保护的全局变量
+```
+var service = map[string]string{}
+
+// RegisterService RegisterService
+func RegisterService(name, addr string) {
+	service[name] = addr
+}
+
+// LookupService LookupService
+func LookupService(name string) string {
+	return service[name]
+}
+```
+常犯的错，全局变量这东西还是要尽量避免。
+```
+var (
+	service   map[string]string
+	serviceMu sync.Mutex
+)
+
+func RegisterService(name, addr string) {
+	serviceMu.Lock()
+	defer serviceMu.Unlock()
+	service[name] = addr
+}
+
+func LookupService(name string) string {
+	serviceMu.Lock()
+	defer serviceMu.Unlock()
+	return service[name]
+}
+```
+
+案例五
+未受保护的成员变量
+```
+type Watchdog struct{ last int64 }
+
+func (w *Watchdog) KeepAlive() {
+	w.last = time.Now().UnixNano() // First conflicting access.
+}
+
+func (w *Watchdog) Start() {
+	go func() {
+		for {
+			time.Sleep(time.Second)
+			// Second conflicting access.
+			if w.last < time.Now().Add(-10*time.Second).UnixNano() {
+				fmt.Println("No keepalives for 10 seconds. Dying.")
+				os.Exit(1)
+			}
+		}
+	}()
+}
+```
+使用atomci包，当然这里有很多第三方更完善的，比如uber的
+```
+type Watchdog struct{ last int64 }
+
+func (w *Watchdog) KeepAlive() {
+	atomic.StoreInt64(&w.last, time.Now().UnixNano())
+}
+
+func (w *Watchdog) Start() {
+	go func() {
+		for {
+			time.Sleep(time.Second)
+			if atomic.LoadInt64(&w.last) < time.Now().Add(-10*time.Second).UnixNano() {
+				fmt.Println("No keepalives for 10 seconds. Dying.")
+				os.Exit(1)
+			}
+		}
+	}()
+}
+```
+
+### 案例六
+```
+package main
+
+import "fmt"
+
+type IceCreamMaker interface {
+	// Great a customer.
+	Hello()
+}
+
+type Ben struct {
+	name string
+}
+
+func (b *Ben) Hello() {
+	fmt.Printf("Ben says, \"Hello my name is %s\"\n", b.name)
+}
+
+type Jerry struct {
+	name string
+}
+
+func (j *Jerry) Hello() {
+	fmt.Printf("Jerry says, \"Hello my name is %s\"\n", j.name)
+}
+
+func main() {
+	var ben = &Ben{name: "Ben"}
+	var jerry = &Jerry{"Jerry"}
+	var maker IceCreamMaker = ben
+
+	var loop0, loop1 func()
+
+	loop0 = func() {
+		maker = ben
+		go loop1()
+	}
+
+	loop1 = func() {
+		maker = jerry
+		go loop0()
+	}
+
+	go loop0()
+
+	for {
+		maker.Hello()
+	}
+}
+```
+输出会有很奇怪的地方
+```
+Ben says, "Hello my name is Jerry"
+```
+因为我们maker = jerry这种赋值并不是原子的，只有对single machine word的赋值才是原子的，但是interface实际上是一个结构体，它包含type和data两个部分，它的复制不是原子性的。
+```
+type interface struct {
+       Type uintptr     // points to the type of the interface implementation
+       Data uintptr     // holds the data for the interface's receiver
+}
+```
+
+## 总结
+- 通过data race来发现竞争错误
+- 不对未定义的行为进行假设
+- 原子性的操作也并非一定是安全的，可见性问题，cpu的一些缓存操作
+- 所有出现data race操作的地方都需要进行处理
+
