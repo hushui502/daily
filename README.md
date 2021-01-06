@@ -53,3 +53,5 @@
 - [ratelimit](https://github.com/hushui502/daily/tree/master/golang/ratelimit)
 - [filestorage](https://github.com/hushui502/daily/tree/master/golang/filestorage)
 - [ffcron](https://github.com/hushui502/daily/tree/master/golang/ffcron)
+- [ffcron](https://github.com/hushui502/daily/tree/master/golang/network)
+- [ffcron](https://github.com/hushui502/daily/tree/master/python/fluentpython)
