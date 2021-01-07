@@ -1,0 +1,6 @@
+# Main sites
+baidu
+google
+
+# @substring 0 10
+short password
