@@ -18,3 +18,6 @@ DECIMAL   HEX   VEX    ZERO-PADDED
 16        10    110    0000000000000010
 288       120   2120   0000000000000120
 ```
+
+## inspired
+https://github.com/benbjohnson/vex
