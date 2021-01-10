@@ -9,7 +9,9 @@ import (
 	"github.com/pquerna/otp/totp"
 	"image/png"
 	"io/ioutil"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -50,6 +52,14 @@ func GeneratePassCode(utf8string string) string {
 }
 
 func main() {
+	var s = `otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example`
+	url, _ := url.Parse(s)
+	fmt.Println("url.path ", url.Path)
+	s = strings.TrimPrefix(url.Path, "/")
+	i := strings.Index(url.Path, ":")
+	fmt.Println("s=====", s, "ss", url.Path[i+1:])
+
+
 	key, err := totp.Generate(totp.GenerateOpts{
 		Issuer:      "gmail.com",
 		AccountName: "hufan@gamil.com",
