@@ -60,3 +60,6 @@
 - [hsfs](https://github.com/hushui502/daily/tree/master/golang/hsfs)
 - [v2h](https://github.com/hushui502/daily/tree/master/golang/v2h)
 - [f2bs](https://github.com/hushui502/daily/tree/master/golang/f2bs)
+- [otp](https://github.com/hushui502/daily/tree/master/golang/otp)
+- [f2bs](https://github.com/hushui502/daily/tree/master/golang/f2bs)
+- [ffpprof](https://github.com/hushui502/daily/tree/master/golang/ffpprof)

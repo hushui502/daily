@@ -16,6 +16,9 @@ import (
 
 const debug = false
 
+// Validate a HOTP passcode given a counter and secret.
+// This is a shortcut for ValidateCustom, with parameters
+// that are compataible with Google-Authenticator.
 func Validate(passcode string, counter uint64, secret string) bool {
 	rv, _ := ValidateCustom(passcode, counter, secret,
 		ValidateOpts{
@@ -34,6 +37,8 @@ type ValidateOpts struct {
 	Algorithm otp.Algorithm
 }
 
+// GenerateCodeCustom uses a counter and secret value and options struct to
+// create a passcode.
 func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passcode string, err error) {
 	secret = strings.TrimSpace(secret)
 	if n := len(secret) % 8; n != 0 {
@@ -79,6 +84,7 @@ func GenerateCodeCustom(secret string, counter uint64, opts ValidateOpts) (passc
 	return opts.Digits.Format(mod), nil
 }
 
+// ValidateCustom validates an HOTP with customizable options. Most users should use Validate()
 func ValidateCustom(passcode string, counter uint64, secret string, opts ValidateOpts) (bool, error) {
 	passcode = strings.TrimSpace(passcode)
 
@@ -98,6 +104,7 @@ func ValidateCustom(passcode string, counter uint64, secret string, opts Validat
 	return false, nil
 }
 
+// GenerateOpts provides options for Generate()
 type GenerateOpts struct {
 	// Name of the issuing Organization/Company
 	Issuer string
@@ -117,7 +124,9 @@ type GenerateOpts struct {
 
 var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
 
+// Generate creates a new HOTP Key.
 func Generate(opts GenerateOpts) (*otp.Key, error) {
+	// url encode the Issuer/AccountName
 	if opts.Issuer == "" {
 		return nil, otp.ErrGenerateMissingIssuer
 	}
