@@ -1,0 +1,10 @@
+# color test
+
+## usage
+```cassandraql
+go get -o gotest ... 
+gotest -v ./... 
+```
+
+### inspired
+https://github.com/rakyll/gotest
