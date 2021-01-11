@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/malfunkt/iprange"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -63,4 +64,15 @@ func GetIpList(ip string) ([]net.IP, error) {
 	list := addressList.Expand()
 
 	return list, err
+}
+
+func IsRoot() bool {
+	return os.Getuid() == 0
+}
+
+func CheckRoot() {
+	if !IsRoot() {
+		fmt.Println("must run with root!")
+		os.Exit(0)
+	}
 }
