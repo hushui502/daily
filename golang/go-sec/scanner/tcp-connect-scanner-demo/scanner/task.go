@@ -37,20 +37,34 @@ func AssigningTasks(tasks []map[string]int) {
 }
 
 func RunTask(tasks []map[string]int) {
-	var wg sync.WaitGroup
-	wg.Add(len(tasks))
+	wg := &sync.WaitGroup{}
 
+	// create a buffer channel
+	taskChan := make(chan map[string]int, vars.ThreadNum*2)
+
+	for i := 0; i < vars.ThreadNum; i++ {
+		go Scan(taskChan, wg)
+	}
+
+	// 生产者
 	for _, task := range tasks {
-		for ip, port := range task {
-			go func(string, int) {
-				err := SaveResult(Connect(ip, port))
-				_ = err
-				wg.Done()
-			}(ip, port)
-		}
+		wg.Add(1)
+		taskChan <- task
 	}
 
 	wg.Wait()
+	close(taskChan)
+}
+
+func Scan(taskChan chan map[string]int, wg *sync.WaitGroup) {
+	// 不断从channel中读取task
+	for task := range taskChan {
+		for ip, port := range task {
+			err := SaveResult(Connect(ip, port))
+			_ = err
+			wg.Done()
+		}
+	}
 }
 
 func SaveResult(ip string, port int, err error) error {
@@ -83,5 +97,3 @@ func PrintResult() {
 		return true
 	})
 }
-
-
