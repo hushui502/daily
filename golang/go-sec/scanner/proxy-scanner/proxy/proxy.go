@@ -24,7 +24,7 @@ var (
 	sockProxyFunc CheckProxyFunc = CheckSockProxy
 )
 
-func Scan(ctx *cli.Context) error {
+func Scan(ctx *cli.Context)  {
 	if ctx.IsSet("debug") {
 		DebugMode = ctx.Bool("debug")
 	}
@@ -65,8 +65,6 @@ func Scan(ctx *cli.Context) error {
 
 	log.Log.Infof("Scan proxies Done, used time: %v\n", time.Since(startTime))
 	models.PrintResult()
-
-	return err
 }
 
 func CheckProxy(proxyAddr []util.ProxyAddr) {
