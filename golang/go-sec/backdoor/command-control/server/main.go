@@ -36,7 +36,8 @@ func main() {
 	case "serv":
 		_ = models.RemoveAll()
 		r := setupRouter()
-		err := r.Run(":8080")
+		//err := r.Run(":8080")
+		err := r.RunTLS(":8080", "./cert/server.pem", "./certs/server.key")
 		_ = err
 	case "run":
 		fmt.Printf("run %v", parameters)
