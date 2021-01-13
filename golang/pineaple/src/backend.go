@@ -1,4 +1,4 @@
-package src
+package main
 
 import (
 	"errors"
@@ -54,6 +54,8 @@ func resolveStatement(g *GlobalVariables, statement Statement) error {
 	} else {
 		errors.New("resolveStatement(): undefined statement type")
 	}
+
+	return nil
 }
 
 func resolveAssignment(g *GlobalVariables, assignment *Assignment) error {

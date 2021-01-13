@@ -1,4 +1,4 @@
-package src
+package main
 
 import (
 	"fmt"
@@ -97,15 +97,14 @@ func (lexer *Lexer) skipSourceCode(n int) {
 }
 
 func (lexer *Lexer) isIgnored() bool {
-	isIgored := false
+	isIgnored := false
 	// target pattern
 	isNewLine := func(c byte) bool {
 		return c == '\r' || c == '\n'
 	}
-	// not need to add line num
 	isWhiteSpace := func(c byte) bool {
 		switch c {
-		case '\t', '\n', '\v', '\r', ' ':
+		case '\t', '\n', '\v', '\f', '\r', ' ':
 			return true
 		}
 		return false
@@ -115,20 +114,19 @@ func (lexer *Lexer) isIgnored() bool {
 		if lexer.nextSourceCodeIs("\r\n") || lexer.nextSourceCodeIs("\n\r") {
 			lexer.skipSourceCode(2)
 			lexer.lineNum += 1
-			isIgored = true
+			isIgnored = true
 		} else if isNewLine(lexer.sourceCode[0]) {
 			lexer.skipSourceCode(1)
 			lexer.lineNum += 1
-			isIgored = true
+			isIgnored = true
 		} else if isWhiteSpace(lexer.sourceCode[0]) {
 			lexer.skipSourceCode(1)
-			isIgored = true
+			isIgnored = true
 		} else {
 			break
 		}
 	}
-
-	return isIgored
+	return isIgnored
 }
 
 func (lexer *Lexer) GetLineNum() int {
@@ -196,6 +194,14 @@ func (lexer *Lexer) LookAhead() int {
 
 func (lexer *Lexer) MatchToken() (lineNum int, tokenType int, token string) {
 	// check token
+	if lexer.isIgnored() {
+		return lexer.lineNum, TOKEN_IGNORED, "Ignored"
+	}
+	if len(lexer.sourceCode) == 0 {
+		return lexer.lineNum, TOKEN_EOF, tokenNameMap[TOKEN_EOF]
+	}
+	fmt.Println(string(lexer.sourceCode[0]))
+
 	switch lexer.sourceCode[0] {
 	case '$':
 		lexer.skipSourceCode(1)
