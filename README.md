@@ -64,3 +64,4 @@
 - [f2bs](https://github.com/hushui502/daily/tree/master/golang/f2bs)
 - [ffpprof](https://github.com/hushui502/daily/tree/master/golang/ffpprof)
 - [go-sec](https://github.com/hushui502/daily/tree/master/golang/go-sec)
+- [pineaple](https://github.com/hushui502/daily/tree/master/golang/pineaple)
