@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	. "luago/api"
 	. "luago/binchunk"
+	"luago/state"
 	. "luago/vm"
 	"os"
 )
@@ -146,6 +147,7 @@ func upvalName(f *Prototype, idx int) string {
 	return "-"
 }
 
+// 遍历寄存器栈
 func printStack(ls LuaState) {
 	top := ls.GetTop()
 	for i := 1; i <= top; i++ {
@@ -162,4 +164,27 @@ func printStack(ls LuaState) {
 		}
 	}
 	fmt.Println()
+}
+
+func luaMain(proto *Prototype) {
+	nRegs := int(proto.MaxStackSize)
+	ls := state.New(nRegs+8, proto)
+	// 预留出寄存器空间
+	ls.SetTop(nRegs)
+
+	for {
+		// 当前指令对应号
+		pc := ls.PC()
+		// 取出一个指令
+		inst := Instruction(ls.Fetch())
+		if inst.Opcode() != OP_RETURN {
+			// 将ls这个栈传递确保ls是不停改变的在每次指令执行完毕
+			inst.Execute(ls)
+			fmt.Printf("[%02d] %s ", pc+1, inst.OpName())
+			printStack(ls)
+		} else {
+			break
+		}
+	}
+
 }

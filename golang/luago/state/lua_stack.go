@@ -1,4 +1,4 @@
-package main
+package state
 
 type luaStack struct {
 	slots []luaValue

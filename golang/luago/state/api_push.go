@@ -1,4 +1,4 @@
-package main
+package state
 
 func (l *luaState) PushNil() {
 	l.stack.push(nil)

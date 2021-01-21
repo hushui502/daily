@@ -1,4 +1,4 @@
-package main
+package binchunk
 
 import "encoding/binary"
 import "math"

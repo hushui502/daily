@@ -1,4 +1,4 @@
-package main
+package state
 
 // 获取idx索引处的len，并压入栈顶
 // TODO 考虑字符串之外的情况

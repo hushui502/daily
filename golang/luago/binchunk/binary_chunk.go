@@ -1,4 +1,4 @@
-package main
+package binchunk
 
 const (
 	LUA_SIGNATURE    = "\x1bLua"

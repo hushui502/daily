@@ -1,4 +1,6 @@
-package main
+package vm
+
+import "luago/api"
 
 /*
  31       22       13       5    0
@@ -62,4 +64,14 @@ func (self Instruction) BMode() byte {
 
 func (self Instruction) CMode() byte {
 	return opcodes[self.Opcode()].argCMode
+}
+
+// 指令分派
+func (self Instruction) Execute(vm api.LuaVM) {
+	action := opcodes[self.Opcode()].action
+	if action != nil {
+		action(self, vm)
+	} else {
+		panic(self.OpName())
+	}
 }
