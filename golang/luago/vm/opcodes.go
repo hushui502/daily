@@ -12,10 +12,10 @@ const (
 )
 
 const (
-	OpArgN = iota 	// 没有参数被使用
-	OpArgU			// 参数被使用
-	OpArgR			// 寄存器索引
-	OpArgK			// 常量索引或者寄存器索引
+	OpArgN = iota // 没有参数被使用
+	OpArgU        // 参数被使用
+	OpArgR        // 寄存器索引
+	OpArgK        // 常量索引或者寄存器索引
 )
 
 type opcode struct {
@@ -23,8 +23,8 @@ type opcode struct {
 	setAFlag byte
 	argBMode byte
 	argCMode byte
-	opMode byte
-	name string
+	opMode   byte
+	name     string
 }
 
 // OpCode
@@ -128,30 +128,3 @@ var opcodes = []opcode{
 	opcode{0, 1, OpArgU, OpArgN, IABC /* */, "VARARG  "}, // R(A), R(A+1), ..., R(A+B-2) = vararg
 	opcode{0, 0, OpArgU, OpArgU, IAx /*  */, "EXTRAARG"}, // extra (larger) argument for previous opcode
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

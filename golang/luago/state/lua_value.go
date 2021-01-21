@@ -1,8 +1,9 @@
 package main
 
 import . "luago/api"
+import . "luago/number"
 
-type luaValue interface {}
+type luaValue interface{}
 
 func typeOf(val luaValue) LuaType {
 	switch val.(type) {
@@ -28,4 +29,43 @@ func convertToBoolean(val luaValue) bool {
 	default:
 		return true
 	}
+}
+
+func convertToFloat(val luaValue) (float64, bool) {
+	switch x := val.(type) {
+	case float64:
+		return x, true
+	case int64:
+		return float64(x), true
+	case string:
+		return ParseFloat(x)
+	default:
+		return 0, false
+	}
+}
+
+func convertToInteger(val luaValue) (int64, bool) {
+	switch x := val.(type) {
+	case int64:
+		return x, true
+	case float64:
+		return FloatToInteger(x)
+	case string:
+		return _stringToInteger(x)
+	default:
+		return 0, false
+	}
+}
+
+// 先看能否直接转成int64
+// 如果不可以尝试先转成float64再转成int64
+func _stringToInteger(s string) (int64, bool) {
+	if i, ok := ParseInteger(s); ok {
+		return i, true
+	}
+	if f, ok := ParseFloat(s); ok {
+		return FloatToInteger(f)
+	}
+
+	return 0, false
 }

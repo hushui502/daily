@@ -35,7 +35,7 @@ func (self Instruction) ABx() (a, bx int) {
 	a = int(self >> 6 & 0xFF)
 	bx = int(self >> 14)
 
-	return 
+	return
 }
 
 func (self Instruction) AsBx() (a, sbx int) {

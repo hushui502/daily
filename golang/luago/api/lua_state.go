@@ -1,6 +1,8 @@
 package api
 
-type LuaType = int
+type LuaType = int   // lua的类型
+type ArithOp = int   // 运算类型
+type CompareOp = int // 比较类型
 
 type LuaState interface {
 	/* basic stack manipulation */
@@ -41,4 +43,9 @@ type LuaState interface {
 	PushInteger(n int64)
 	PushNumber(n float64)
 	PushString(s string)
+	/* arith */
+	Arith(op ArithOp)                          // 算数运算和位运算
+	Compare(idx1, idx2 int, op CompareOp) bool // 比较运算
+	Len(idx int)                               // 取长度运算
+	Concat(n int)                              // 字符串拼接运算
 }

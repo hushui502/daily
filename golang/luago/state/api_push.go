@@ -19,4 +19,3 @@ func (l *luaState) PushNumber(n float64) {
 func (l *luaState) PushString(s string) {
 	l.stack.push(s)
 }
-

@@ -9,6 +9,3 @@ func New() *luaState {
 		stack: newLuaStack(20),
 	}
 }
-
-
-

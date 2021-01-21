@@ -1,13 +1,12 @@
 package main
 
 import (
-	"io/ioutil"
-	"os"
 	"fmt"
+	"io/ioutil"
 	. "luago/api"
-	. "luago/vm"
 	. "luago/binchunk"
-
+	. "luago/vm"
+	"os"
 )
 
 func main() {
@@ -164,4 +163,3 @@ func printStack(ls LuaState) {
 	}
 	fmt.Println()
 }
-

@@ -5,7 +5,6 @@ import (
 	. "luago/api"
 )
 
-
 // 将lua类型转换为对应的字符串
 func (l *luaState) TypeName(tp LuaType) string {
 	switch tp {
@@ -99,9 +98,8 @@ func (l *luaState) ToInteger(idx int) int64 {
 
 func (l *luaState) ToIntegerX(idx int) (int64, bool) {
 	val := l.stack.get(idx)
-	i, ok := val.(int64)
 
-	return i, ok
+	return convertToInteger(val)
 }
 
 func (l *luaState) ToNumber(idx int) float64 {
@@ -112,14 +110,8 @@ func (l *luaState) ToNumber(idx int) float64 {
 
 func (l *luaState) ToNumberX(idx int) (float64, bool) {
 	val := l.stack.get(idx)
-	switch x := val.(type) {
-	case float64:
-		return x, true
-	case int64:
-		return float64(x), true
-	default:
-		return 0, false
-	}
+
+	return convertToFloat(val)
 }
 
 func (l *luaState) ToString(idx int) string {
