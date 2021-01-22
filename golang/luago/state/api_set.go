@@ -27,4 +27,3 @@ func (self *luaState) SetI(idx int, i int64) {
 	v := self.stack.pop()
 	self.setTable(t, i, v)
 }
-

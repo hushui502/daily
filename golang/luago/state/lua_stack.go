@@ -8,7 +8,7 @@ type luaStack struct {
 	//closure
 	closure *closure
 	varargs []luaValue
-	pc int
+	pc      int
 }
 
 func newLuaStack(size int) *luaStack {

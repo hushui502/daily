@@ -51,7 +51,7 @@ func (self *luaState) callLuaClosure(nArags, nResults int, c *closure) {
 	self.popLuaStack()
 
 	if nResults != 0 {
-		results := newStack.popN(newStack.top-nRegs)
+		results := newStack.popN(newStack.top - nRegs)
 		self.stack.check(len(results))
 		self.stack.pushN(results, nResults)
 	}

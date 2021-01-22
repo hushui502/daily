@@ -22,4 +22,3 @@ func (self *luaState) popLuaStack() {
 	self.stack = stack.prev
 	stack.prev = nil
 }
-

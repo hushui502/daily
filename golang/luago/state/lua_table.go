@@ -6,7 +6,7 @@ import (
 )
 
 type luaTable struct {
-	arr []luaValue
+	arr  []luaValue
 	_map map[luaValue]luaValue
 }
 
@@ -78,14 +78,14 @@ func (self *luaTable) put(key, val luaValue) {
 			self._map = make(map[luaValue]luaValue)
 		}
 		self._map[key] = val
-	} else {	// 如果是nil就把该键从map删除节约空间
+	} else { // 如果是nil就把该键从map删除节约空间
 		delete(self._map, key)
 	}
 }
 
 // 删除val = nil的数组slot
 func (self *luaTable) _shrinkArray() {
-	for i := len(self.arr)-1; i >= 0; i-- {
+	for i := len(self.arr) - 1; i >= 0; i-- {
 		if self.arr[i] == nil {
 			self.arr = self.arr[0:i]
 		}
@@ -107,4 +107,3 @@ func (self *luaTable) _expandArray() {
 func (self *luaTable) len() int {
 	return len(self.arr)
 }
-
