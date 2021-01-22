@@ -1,17 +1,25 @@
 package state
 
-import . "luago/binchunk"
-
 type luaState struct {
 	stack *luaStack
-	proto *Prototype
-	pc    int
 }
 
-func New(stackSize int, proto *Prototype) *luaState {
+func New() *luaState {
 	return &luaState{
 		stack: newLuaStack(20),
-		proto: proto,
-		pc:    0,
 	}
 }
+
+// 从栈顶推入一个调用栈
+func (self *luaState) pushLuaStack(stack *luaStack) {
+	stack.prev = self.stack
+	self.stack = stack
+}
+
+// 从栈顶弹出一个调用栈
+func (self *luaState) popLuaStack() {
+	stack := self.stack
+	self.stack = stack.prev
+	stack.prev = nil
+}
+

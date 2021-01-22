@@ -32,20 +32,13 @@ func (self *luaState) getTable(t, k luaValue) LuaType {
 	panic("not a table!")
 }
 
-func (self *luaState) GetFiled(idx int, k string) LuaType {
+func (self *luaState) GetField(idx int, k string) LuaType {
 	t := self.stack.get(idx)
 	return self.getTable(t, k)
 }
-
-//func (self *luaState) GetFiled(idx int, k string) LuaType {
-//	self.PushString(k)
-//	return self.GetTable(idx)
-//}
 
 // 键是数字，主要用于table中的数组arr
 func (self *luaState) GetI(idx int, i int64) LuaType {
 	t := self.stack.get(idx)
 	return self.getTable(t, i)
 }
-
-

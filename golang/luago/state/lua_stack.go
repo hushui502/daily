@@ -3,6 +3,12 @@ package state
 type luaStack struct {
 	slots []luaValue
 	top   int
+	// func call
+	prev *luaStack
+	//closure
+	closure *closure
+	varargs []luaValue
+	pc int
 }
 
 func newLuaStack(size int) *luaStack {
@@ -12,6 +18,7 @@ func newLuaStack(size int) *luaStack {
 	}
 }
 
+// 检查是否需要扩容
 func (self *luaStack) check(n int) {
 	free := len(self.slots) - self.top
 	for i := free; i < n; i++ {
@@ -35,6 +42,32 @@ func (self *luaStack) pop() luaValue {
 	val := self.slots[self.top]
 	self.slots[self.top] = nil
 	return val
+}
+
+// 一次性弹出n个值
+func (self *luaStack) popN(n int) []luaValue {
+	vals := make([]luaValue, n)
+	for i := n - 1; i >= 0; i-- {
+		vals[i] = self.pop()
+	}
+
+	return vals
+}
+
+// 一次性推入n个值
+// 多退少补，但是不会超过n
+func (self *luaStack) pushN(vals []luaValue, n int) {
+	nVals := len(vals)
+	if n < 0 {
+		n = nVals
+	}
+	for i := 0; i < n; i++ {
+		if i < nVals {
+			self.push(vals[i])
+		} else {
+			self.push(nil)
+		}
+	}
 }
 
 func (self *luaStack) absIndex(idx int) int {

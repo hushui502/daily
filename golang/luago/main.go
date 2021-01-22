@@ -168,7 +168,7 @@ func printStack(ls LuaState) {
 
 func luaMain(proto *Prototype) {
 	nRegs := int(proto.MaxStackSize)
-	ls := state.New(nRegs+8, proto)
+	ls := state.New()
 	// 预留出寄存器空间
 	ls.SetTop(nRegs)
 
@@ -186,5 +186,4 @@ func luaMain(proto *Prototype) {
 			break
 		}
 	}
-
 }

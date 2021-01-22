@@ -58,4 +58,10 @@ type LuaState interface {
 	SetTable(idx int)
 	SetField(idx int, k string)
 	SetI(idx int, n int64)
+	/* function call */
+	// 加载二进制chunk，把主函数原型转化为闭包并推入栈顶
+	// mode 加载模式 可选b t bt 代表chunk需要为字节还是文本还是都可以
+	// 返回状态码 0 成功 非0加载失败
+	Load(chunk []byte, chunkName, mode string) int
+	Call(nArgs, nResults int)
 }
