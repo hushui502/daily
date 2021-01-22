@@ -1,8 +1,9 @@
 package api
 
-type LuaType = int   // lua的类型
-type ArithOp = int   // 运算类型
-type CompareOp = int // 比较类型
+type LuaType = int                 // lua的类型
+type ArithOp = int                 // 运算类型
+type CompareOp = int               // 比较类型
+type GoFunction func(LuaState) int // Go函数类型
 
 type LuaState interface {
 	/* basic stack manipulation */
@@ -64,4 +65,17 @@ type LuaState interface {
 	// 返回状态码 0 成功 非0加载失败
 	Load(chunk []byte, chunkName, mode string) int
 	Call(nArgs, nResults int)
+	/* Go function call */
+	// Go函数进入Lua栈，变成Go闭包才能为Lua使用，此方法就是Go函数转换撑Go闭包推入栈顶
+	PushGoFunction(f GoFunction)
+	// 判断索引处的值能否转成Go函数，不改变栈的状态
+	IsGoFunction(idx int) bool
+	// 把栈索引处的值转换成Go函数并返回，如果不可，返沪nil
+	ToGoFunction(idx int) GoFunction
+	/* 操作全局变量 */
+	// 将全局环境表推入栈顶
+	PushGlobalTable()
+	GetGlobal(name string) LuaType
+	SetGlobal(name string)
+	Register(name string, f GoFunction)
 }

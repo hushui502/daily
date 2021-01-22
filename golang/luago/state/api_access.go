@@ -133,3 +133,21 @@ func (l *luaState) ToStringX(idx int) (string, bool) {
 		return "", false
 	}
 }
+
+func (l *luaState) IsGoFunction(idx int) bool {
+	val := l.stack.get(idx)
+	if c, ok := val.(*closure); ok {
+		return c.goFunc != nil
+	}
+
+	return false
+}
+
+func (l *luaState) ToGoFunction(idx int) GoFunction {
+	val := l.stack.get(idx)
+	if c, ok := val.(*closure); ok {
+		return c.goFunc
+	}
+
+	return nil
+}
