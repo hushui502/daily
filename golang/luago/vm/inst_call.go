@@ -118,3 +118,23 @@ func self(i Instruction, vm LuaVM) {
 	vm.GetTable(b)
 	vm.Replace(a)
 }
+
+func tForCall(i Instruction, vm LuaVM) {
+	a, _, c := i.ABC()
+	a += 1
+
+	_pushFuncAndArgs(a, 3, vm)
+	vm.Call(2, c)
+
+	_popResults(a+3, c+1, vm)
+}
+
+func tForLoop(i Instruction, vm LuaVM) {
+	a, sBx := i.AsBx()
+	a += 1
+
+	if !vm.IsNil(a+1) {
+		vm.Copy(a+1, a)
+		vm.AddPC(sBx)
+	}
+}
