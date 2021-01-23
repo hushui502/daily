@@ -12,6 +12,7 @@ func (self *luaState) NewTable() {
 	self.CreateTable(0, 0)
 }
 
+// 取得一个tbl，然后弹出栈顶元素作为键来去tbl查找val并推入栈顶，返回该val的type
 func (self *luaState) GetTable(idx int) LuaType {
 	// 获取一个table
 	t := self.stack.get(idx)

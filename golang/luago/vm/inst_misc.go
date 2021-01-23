@@ -17,7 +17,8 @@ func move(i Instruction, vm LuaVM) {
 func jmp(i Instruction, vm LuaVM) {
 	a, sBx := i.AsBx()
 	vm.AddPC(sBx)
+
 	if a != 0 {
-		panic("--todo!")
+		vm.CloseUpvalues(a)
 	}
 }

@@ -5,6 +5,11 @@ type ArithOp = int                 // 运算类型
 type CompareOp = int               // 比较类型
 type GoFunction func(LuaState) int // Go函数类型
 
+// 注册表伪索引减去该索引对应的就是Upvalue伪索引
+func LuaUpvalueIndex(i int) int {
+	return LUA_REGISTRYINDEX - i
+}
+
 type LuaState interface {
 	/* basic stack manipulation */
 	GetTop() int
@@ -78,4 +83,7 @@ type LuaState interface {
 	GetGlobal(name string) LuaType
 	SetGlobal(name string)
 	Register(name string, f GoFunction)
+	/* go闭包支持 */
+	// 将Go函数变成闭包推入栈顶，需要先从栈顶弹出n个LuaValue，这些值会成为Go闭包的Upvalue
+	PushGoClosure(f GoFunction, n int)
 }

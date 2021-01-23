@@ -7,12 +7,27 @@ type closure struct {
 	// 函数原型
 	proto  *binchunk.Prototype // lua closure
 	goFunc GoFunction          // go closure
+	upvals []*upvalue		// Upvalue
+}
+
+type upvalue struct {
+	val *luaValue
 }
 
 func newLuaClosure(proto *binchunk.Prototype) *closure {
-	return &closure{proto: proto}
+	c := &closure{proto: proto}
+	if nUpvals := len(proto.Upvalues); nUpvals > 0 {
+		c.upvals = make([]*upvalue, nUpvals)
+	}
+
+	return c
 }
 
-func newGoClosure(f GoFunction) *closure {
-	return &closure{goFunc: f}
+func newGoClosure(f GoFunction, nUpvals int) *closure {
+	c := &closure{goFunc: f}
+	if nUpvals > 0 {
+		c.upvals = make([]*upvalue, nUpvals)
+	}
+
+	return c
 }

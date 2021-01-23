@@ -32,9 +32,27 @@ func (self *luaState) GetRK(rk int) {
 }
 
 func (self *luaState) LoadProto(idx int) {
-	proto := self.stack.closure.proto.Protos[idx]
-	closure := newLuaClosure(proto)
-	self.stack.push(closure)
+	stack := self.stack
+	subProto := stack.closure.proto.Protos[idx]
+	closure := newLuaClosure(subProto)
+	stack.push(closure)
+
+	for i, uvInfo := range subProto.Upvalues {
+		uvIdx := int(uvInfo.Idx)
+		if uvInfo.Instack == 1 {			// 当前函数的局部变量
+			if stack.openuvs == nil {
+				stack.openuvs = map[int]*upvalue{}
+			}
+			if openuv, found := stack.openuvs[uvIdx]; found { 			// 当前的局部变量在栈上则直接访问
+				closure.upvals[i] = openuv
+			} else {	// 需要把变量保存在某地openvs，局部变量退出作用域
+				closure.upvals[i] = &upvalue{&stack.slots[uvIdx]}
+				stack.openuvs[uvIdx] = closure.upvals[i]
+			}
+		} else {	// 外围函数的局部变量
+			closure.upvals[i] = stack.closure.upvals[uvIdx]
+		}
+	}
 }
 
 func (self *luaState) RegisterCount() int {
@@ -48,4 +66,15 @@ func (self *luaState) LoadVararg(n int) {
 
 	self.stack.check(n)
 	self.stack.pushN(self.stack.varargs, n)
+}
+
+// 处于开启状态的Upvalue引用了还在寄存器中的Lua值，将这些值复制出来。更新upvalue
+func (self *luaState) CloseUpvalues(a int) {
+	for i, openuv := range self.stack.openuvs {
+		if i >= a-1 {
+			val := *openuv.val
+			openuv.val = &val
+			delete(self.stack.openuvs, i)
+		}
+	}
 }

@@ -2,13 +2,39 @@ package vm
 
 import . "luago/api"
 
+func getUpVal(i Instruction, vm LuaVM)  {
+	a, b, _ := i.ABC()
+	a += 1
+	b += 1
+
+	vm.Copy(LuaUpvalueIndex(b), a)
+}
+
+func setUpval(i Instruction, vm LuaVM) {
+	a, b, _ := i.ABC()
+	a += 1
+	b += 1
+
+	vm.Copy(a, LuaUpvalueIndex(b))
+}
+
+// Upvalue是表
 func getTabUp(i Instruction, vm LuaVM) {
-	a, _, c := i.ABC()
+	a, b, c := i.ABC()
+	a += 1
+	b += 1
+
+	vm.GetRK(c)
+	vm.GetTable(LuaUpvalueIndex(b))
+	vm.Replace(a)
+}
+
+func setTabUp(i Instruction, vm LuaVM) {
+	a, b, c := i.ABC()
 	a += 1
 
-	vm.PushGlobalTable()
+	vm.GetRK(b)
 	vm.GetRK(c)
-	vm.GetTable(-2)
-	vm.Replace(a)
-	vm.Pop(1)
+	vm.SetTable(LuaUpvalueIndex(a))
 }
+

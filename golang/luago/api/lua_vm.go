@@ -9,5 +9,6 @@ type LuaVM interface {
 	GetRK(rk int)       // 从常量表或者栈里取出常量并推入栈顶
 	LoadProto(idx int)  // 从函数原型的子函数原型表中取出
 	RegisterCount() int // 返回当前函数的寄存器个数
-	LoadVararg(n int)
+	LoadVararg(n int)	// 加载n个var
+	CloseUpvalues(a int) // 关闭（闭合）Upvalue
 }

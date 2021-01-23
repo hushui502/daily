@@ -13,6 +13,8 @@ type luaStack struct {
 	pc      int
 	/* linked list */
 	prev *luaStack
+	/* upvalues */
+	openuvs map[int]*upvalue
 }
 
 func newLuaStack(size int, state *luaState) *luaStack {
@@ -82,17 +84,26 @@ func (self *luaStack) absIndex(idx int) int {
 	return idx + self.top + 1
 }
 
+// 验证是否是合法索引
 func (self *luaStack) isValid(idx int) bool {
-	if idx == LUA_REGISTRYINDEX {
-		return true
+	if idx == LUA_REGISTRYINDEX { // upvalues
+		uvIdx := LUA_REGISTRYINDEX - idx - 1
+		c := self.closure
+		return c != nil && uvIdx < len(c.upvals)
 	}
 	absIdx := self.absIndex(idx)
 	return absIdx > 0 && absIdx <= self.top
 }
 
+// 获取该索引处的插槽值
 func (self *luaStack) get(idx int) luaValue {
-	if idx == LUA_REGISTRYINDEX {
-		return self.state.registry
+	if idx == LUA_REGISTRYINDEX {	// upvalues
+		uvIdx := LUA_REGISTRYINDEX - idx - 1
+		c := self.closure
+		if c == nil || uvIdx >= len(c.upvals) {
+			return nil
+		}
+		return *(c.upvals[uvIdx].val)
 	}
 	absIdx := self.absIndex(idx)
 	if absIdx > 0 && absIdx <= self.top {
@@ -101,9 +112,14 @@ func (self *luaStack) get(idx int) luaValue {
 	return nil
 }
 
+
 func (self *luaStack) set(idx int, val luaValue) {
 	if idx == LUA_REGISTRYINDEX {
-		self.state.registry = val.(*luaTable)
+		uvIdx := LUA_REGISTRYINDEX - idx - 1
+		c := self.closure
+		if c != nil && uvIdx < len(c.upvals) {
+			*(c.upvals[idx].val) = val
+		}
 		return
 	}
 	absIdx := self.absIndex(idx)
