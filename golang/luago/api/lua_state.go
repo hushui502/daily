@@ -97,5 +97,7 @@ type LuaState interface {
 	RawSetI(idx int, i int64)
 	/* 迭代器 */
 	Next(idx int) bool
-
+	/* 错误处理 */
+	Error() int
+	PCall(nArgs, nResults, msgh int) int
 }

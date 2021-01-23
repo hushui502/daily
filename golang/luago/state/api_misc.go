@@ -1,5 +1,7 @@
 package state
 
+import . "luago/api"
+
 // 获取idx索引处的len，并压入栈顶
 // TODO 考虑字符串之外的情况
 func (self *luaState) Len(idx int) {
@@ -54,7 +56,32 @@ func (self *luaState) Next(idx int) bool {
 	panic("table expected!")
 }
 
+// 返现栈顶错误，直接panic模拟抛
+func (self *luaState) Error() int {
+	err := self.stack.pop()
+	panic(err)
+}
 
+func (self *luaState) PCall(nArgs, nResults, msgh int) (status int) {
+	caller := self.stack
+	status = LUA_ERRRUN
+
+	// catch error
+	defer func() {
+		if err := recover(); err != nil {
+			for self.stack != caller {
+				self.popLuaStack()
+			}
+			self.stack.push(err)
+		}
+	}()
+
+	self.Call(nArgs, nResults)
+	// if no catch error
+	status = LUA_OK
+
+	return
+}
 
 
 
