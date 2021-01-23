@@ -7,6 +7,7 @@ import (
 )
 
 type operator struct {
+	metamethod string
 	integerFunc func(int64, int64) int64
 	floatFunc   func(float64, float64) float64
 }
@@ -35,22 +36,21 @@ var (
 )
 
 var operators = []operator{
-	operator{iadd, fadd},
-	operator{isub, fsub},
-	operator{imul, fmul},
-	operator{imod, fmod},
-	operator{nil, pow},
-	operator{nil, div},
-	operator{iidiv, fidiv},
-	operator{band, nil},
-	operator{bor, nil},
-	operator{bxor, nil},
-	operator{shl, nil},
-	operator{shr, nil},
-	operator{iunm, funm},
-	operator{bnot, nil},
+	operator{"__add", iadd, fadd},
+	operator{"__sub", isub, fsub},
+	operator{"__mul", imul, fmul},
+	operator{"__mod", imod, fmod},
+	operator{"__pow", nil, pow},
+	operator{"__div", nil, div},
+	operator{"__idiv", iidiv, fidiv},
+	operator{"__band", band, nil},
+	operator{"__bor", bor, nil},
+	operator{"__bxor", bxor, nil},
+	operator{"__shl", shl, nil},
+	operator{"__shr", shr, nil},
+	operator{"__unm", iunm, funm},
+	operator{"__bnot", bnot, nil},
 }
-
 func (self *luaState) Arith(op ArithOp) {
 	var a, b luaValue
 	b = self.stack.pop()
@@ -66,6 +66,14 @@ func (self *luaState) Arith(op ArithOp) {
 	} else {
 		panic("arithmetic error!")
 	}
+
+	mm := operator.metamethod
+	if result, ok := callMetamethod(a, b, mm, self); ok {
+		self.stack.push(result)
+		return
+	}
+
+	panic("arithmetic error!")
 }
 
 // 加减乘除取反期望是转换为整数进行运算，对于其他操作就转换成浮点数运算

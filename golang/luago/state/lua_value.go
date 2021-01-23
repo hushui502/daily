@@ -73,3 +73,29 @@ func _stringToInteger(s string) (int64, bool) {
 
 	return 0, false
 }
+
+func getMetafield(val luaValue, fieldName string, ls *luaState) luaValue {
+	if mt := getMetatable(val, ls); mt != nil {
+		return mt.get(fieldName)
+	}
+
+	return nil
+}
+
+// 调用原表方法
+func callMetamethod(a, b luaValue, mmName string, ls *luaState) (luaValue, bool) {
+	var mm luaValue
+	if mm = getMetafield(a, mmName, ls); mm == nil {
+		if mm = getMetafield(b, mmName, ls); mm == nil {
+			return nil, false
+		}
+	}
+
+	ls.stack.check(4)
+	ls.stack.push(mm)
+	ls.stack.push(a)
+	ls.stack.push(b)
+	ls.Call(2, 1)
+
+	return ls.stack.pop(), true
+}

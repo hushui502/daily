@@ -34,3 +34,15 @@ func (l *luaState) PushGoClosure(f GoFunction, n int) {
 	}
 	l.stack.push(closure)
 }
+
+// 将全局环境推入栈顶
+func (self *luaState) PushGlobalTable() {
+	global := self.registry.get(LUA_RIDX_GLOBALS)
+	self.stack.push(global)
+}
+
+// 从栈顶推入一个调用栈
+func (self *luaState) pushLuaStack(stack *luaStack) {
+	stack.prev = self.stack
+	self.stack = stack
+}

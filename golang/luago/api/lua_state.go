@@ -86,4 +86,13 @@ type LuaState interface {
 	/* go闭包支持 */
 	// 将Go函数变成闭包推入栈顶，需要先从栈顶弹出n个LuaValue，这些值会成为Go闭包的Upvalue
 	PushGoClosure(f GoFunction, n int)
+	/* 元表和元方法 */
+	GetMetatable(idx int) bool
+	SetMetatable(idx int)
+	RawLen(idx int) uint
+	RawEqual(idx1, idx2 int) bool
+	RawGet(idx int) LuaType
+	RawSet(idx int)
+	RawGetI(idx int, i int64) LuaType
+	RawSetI(idx int, i int64)
 }

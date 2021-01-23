@@ -2,7 +2,7 @@ package vm
 
 import . "luago/api"
 
-func getUpVal(i Instruction, vm LuaVM)  {
+func getUpval(i Instruction, vm LuaVM)  {
 	a, b, _ := i.ABC()
 	a += 1
 	b += 1

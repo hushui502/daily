@@ -1,11 +1,13 @@
 package state
 
 import (
+	"fmt"
 	"luago/number"
 	"math"
 )
 
 type luaTable struct {
+	metatable *luaTable // 元表
 	arr  []luaValue
 	_map map[luaValue]luaValue
 }
@@ -20,6 +22,27 @@ func newLuaTable(nArr, nRec int) *luaTable {
 	}
 
 	return t
+}
+
+func setMetatable(val luaValue, mt *luaTable, ls *luaState) {
+	 if t, ok := val.(*luaTable); ok {
+	 	t.metatable = mt
+	 	return
+	 }
+	 key := fmt.Sprintf("_MT%d", typeOf(val))
+	 ls.registry.put(key, mt)
+}
+
+func getMetatable(val luaValue, ls *luaState) *luaTable {
+	if t, ok := val.(*luaTable); ok {
+		return t.metatable
+	}
+	key := fmt.Sprintf("_MT%d", typeOf(val))
+	if mt := ls.registry.get(key); mt != nil {
+		return mt.(*luaTable)
+	}
+
+	return nil
 }
 
 // 首先查询arr，然后再map
@@ -106,4 +129,8 @@ func (self *luaTable) _expandArray() {
 
 func (self *luaTable) len() int {
 	return len(self.arr)
+}
+
+func (self *luaTable) hasMetafield(fieldName string) bool {
+	return self.metatable != nil && self.metatable.get(fieldName) != nil
 }
