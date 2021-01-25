@@ -33,7 +33,7 @@ func NewLexer(chunk, chunkName string) *Lexer {
 }
 
 // 查看下一个token的类型
-func (self *Lexer) lookAhead() int {
+func (self *Lexer) LookAhead() int {
 	// 缓存作用
 	if self.nextTokenLine > 0 {
 		return self.nextTokenKind
@@ -49,6 +49,7 @@ func (self *Lexer) lookAhead() int {
 }
 
 // 获取指定类型的token，语法相关
+// 游标会前进1个字符
 func (self *Lexer) NextTokenOfKind(kind int) (line int, token string) {
 	// 实际的下一个token kind
 	line, _kind, token := self.NextToken()
