@@ -88,7 +88,7 @@ type NameExp struct {
 	Name string
 }
 
-type ParentExp struct {
+type ParentsExp struct {
 	Exp Exp
 }
 

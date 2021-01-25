@@ -56,7 +56,7 @@ func parseParentsExp(lexer *Lexer) Exp {
 
 	switch exp.(type) {
 	case *VarargExp, *FuncCallExp, *NameExp, *TableAccessExp:
-		return &ParentExp{exp}
+		return &ParentsExp{exp}
 	}
 
 	return exp

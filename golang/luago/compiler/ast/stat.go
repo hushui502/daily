@@ -30,7 +30,7 @@ type BreakStat struct { Line int } // break	会产生一条跳转指令
 type LabelStat struct { Name string } // '::' Name '::'
 type GotoStat struct { Name string } // goto Name
 type DoStat struct { Block *Block } // do block end
-type FunctionCall = FuncCallExp // function call
+type FuncCallStat = FuncCallExp // function call
 
 // while exp do block end
 type WhileStat struct {

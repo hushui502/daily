@@ -77,3 +77,8 @@ func Undump(data []byte) *Prototype {
 	reader.readByte()
 	return reader.readProto("")
 }
+
+// 是否是合法二进制块
+func IsBinaryChunk(data []byte) bool {
+	return len(data) > 4 && string(data[:4]) == LUA_SIGNATURE
+}
