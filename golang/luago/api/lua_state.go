@@ -11,6 +11,11 @@ func LuaUpvalueIndex(i int) int {
 }
 
 type LuaState interface {
+	BasicAPI
+	AuxLib
+}
+
+type BasicAPI interface {
 	/* basic stack manipulation */
 	GetTop() int
 	AbsIndex(idx int) int
@@ -36,6 +41,7 @@ type LuaState interface {
 	IsTable(idx int) bool
 	IsThread(idx int) bool
 	IsFunction(idx int) bool
+	IsGoFunction(idx int) bool
 	ToBoolean(idx int) bool
 	ToInteger(idx int) int64
 	ToIntegerX(idx int) (int64, bool)
@@ -43,61 +49,50 @@ type LuaState interface {
 	ToNumberX(idx int) (float64, bool)
 	ToString(idx int) string
 	ToStringX(idx int) (string, bool)
+	ToGoFunction(idx int) GoFunction
+	ToPointer(idx int) interface{}
+	RawLen(idx int) uint
 	/* push functions (Go -> stack) */
 	PushNil()
 	PushBoolean(b bool)
 	PushInteger(n int64)
 	PushNumber(n float64)
 	PushString(s string)
-	/* arith */
-	Arith(op ArithOp)                          // 算数运算和位运算
-	Compare(idx1, idx2 int, op CompareOp) bool // 比较运算
-	Len(idx int)                               // 取长度运算
-	Concat(n int)                              // 字符串拼接运算
-	/* get functios (Lua-stack) */
+	PushFString(fmt string, a ...interface{})
+	PushGoFunction(f GoFunction)
+	PushGoClosure(f GoFunction, n int)
+	PushGlobalTable()
+	/* Comparison and arithmetic functions */
+	Arith(op ArithOp)
+	Compare(idx1, idx2 int, op CompareOp) bool
+	RawEqual(idx1, idx2 int) bool
+	/* get functions (Lua -> stack) */
 	NewTable()
 	CreateTable(nArr, nRec int)
 	GetTable(idx int) LuaType
 	GetField(idx int, k string) LuaType
 	GetI(idx int, i int64) LuaType
-	/* set functions (stack->lua) */
+	RawGet(idx int) LuaType
+	RawGetI(idx int, i int64) LuaType
+	GetMetatable(idx int) bool
+	GetGlobal(name string) LuaType
+	/* set functions (stack -> Lua) */
 	SetTable(idx int)
 	SetField(idx int, k string)
-	SetI(idx int, n int64)
-	/* function call */
-	// 加载二进制chunk，把主函数原型转化为闭包并推入栈顶
-	// mode 加载模式 可选b t bt 代表chunk需要为字节还是文本还是都可以
-	// 返回状态码 0 成功 非0加载失败
-	Load(chunk []byte, chunkName, mode string) int
-	Call(nArgs, nResults int)
-	/* Go function call */
-	// Go函数进入Lua栈，变成Go闭包才能为Lua使用，此方法就是Go函数转换撑Go闭包推入栈顶
-	PushGoFunction(f GoFunction)
-	// 判断索引处的值能否转成Go函数，不改变栈的状态
-	IsGoFunction(idx int) bool
-	// 把栈索引处的值转换成Go函数并返回，如果不可，返沪nil
-	ToGoFunction(idx int) GoFunction
-	/* 操作全局变量 */
-	// 将全局环境表推入栈顶
-	PushGlobalTable()
-	GetGlobal(name string) LuaType
+	SetI(idx int, i int64)
+	RawSet(idx int)
+	RawSetI(idx int, i int64)
+	SetMetatable(idx int)
 	SetGlobal(name string)
 	Register(name string, f GoFunction)
-	/* go闭包支持 */
-	// 将Go函数变成闭包推入栈顶，需要先从栈顶弹出n个LuaValue，这些值会成为Go闭包的Upvalue
-	PushGoClosure(f GoFunction, n int)
-	/* 元表和元方法 */
-	GetMetatable(idx int) bool
-	SetMetatable(idx int)
-	RawLen(idx int) uint
-	RawEqual(idx1, idx2 int) bool
-	RawGet(idx int) LuaType
-	RawSet(idx int)
-	RawGetI(idx int, i int64) LuaType
-	RawSetI(idx int, i int64)
-	/* 迭代器 */
-	Next(idx int) bool
-	/* 错误处理 */
-	Error() int
+	/* 'load' and 'call' functions (load and run Lua code) */
+	Load(chunk []byte, chunkName, mode string) int
+	Call(nArgs, nResults int)
 	PCall(nArgs, nResults, msgh int) int
+	/* miscellaneous functions */
+	Len(idx int)
+	Concat(n int)
+	Next(idx int) bool
+	Error() int
+	StringToNumber(s string) bool
 }

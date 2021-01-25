@@ -1,6 +1,9 @@
 package state
 
-import . "luago/api"
+import (
+	"fmt"
+	. "luago/api"
+)
 
 func (l *luaState) PushNil() {
 	l.stack.push(nil)
@@ -45,4 +48,9 @@ func (self *luaState) PushGlobalTable() {
 func (self *luaState) pushLuaStack(stack *luaStack) {
 	stack.prev = self.stack
 	self.stack = stack
+}
+
+func (self *luaState) PushFString(fmtStr string, a ...interface{}) {
+	str := fmt.Sprintf(fmtStr, a...)
+	self.stack.push(str)
 }

@@ -1,6 +1,9 @@
 package state
 
-import . "luago/api"
+import (
+	. "luago/api"
+	"luago/number"
+)
 
 // 获取idx索引处的len，并压入栈顶
 // TODO 考虑字符串之外的情况
@@ -83,8 +86,18 @@ func (self *luaState) PCall(nArgs, nResults, msgh int) (status int) {
 	return
 }
 
+func (self *luaState) StringToNumber(s string) bool {
+	if n, ok := number.ParseInteger(s); ok {
+		self.PushInteger(n)
+		return true
+	}
+	if n, ok := number.ParseFloat(s); ok {
+		self.PushNumber(n)
+		return true
+	}
 
-
+	return false
+}
 
 
 
