@@ -2,21 +2,143 @@
 
 Share memory by communicating; don’t communicate by sharing memory.
 
-## 锁的范围一定要小，且尽量的少
-## 用锁一定要注意解锁，或者提供一种一定时间必须解锁的机制，否则容易导致死锁
+### 锁的范围一定要小，且尽量的少
+### 用锁一定要注意解锁，或者提供一种一定时间必须解锁的机制，否则容易导致死锁
 
 ## 锁的实现方式
 
 - Barging
 
 这种模式是为了提高吞吐量，当锁被始放后，它会唤醒第一个等待者，然后把锁给第一个等待者或者第一个请求锁的人
+![](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/7c81ad414d8a411392304d44b33586ba~tplv-k3u1fbpfcp-watermark.image)
 
 - Handoff
 
 当锁释放时候，锁会一直被持有等到第一个等待者准备好获取锁，它降低了吞吐量。一定程度上避免了饥饿，因为没有上下文切换的锁会更快。缺碘是效率会差点。
+![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/78bdff97751b418b98c759d11e61bf4d~tplv-k3u1fbpfcp-watermark.image)
 
 - Spining
 
 自旋锁，适合等待队列为空或者应用程序重度使用锁的时候。
 
+![](https://p1-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e26f539508b84ef0a96c69bd5b73ce31~tplv-k3u1fbpfcp-watermark.image)
 ## Go Mutex实现原理
+![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f4beb8d7fb8c428286d00bf92afdc4bd~tplv-k3u1fbpfcp-watermark.image)
+![](https://p6-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/381bf84db9694267ac634f12a7e8cbf6~tplv-k3u1fbpfcp-watermark.image)
+
+## 源码分析
+```
+type Mutex struct {
+	state int32
+	sema  uint32
+}
+```
+Mutex 结构体由 state sema 两个 4 字节成员组成，其中 state 表示了当前锁的状态， sema 是用于控制锁的信号量
+
+![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/da155bd80313459699f88c2046708ca8~tplv-k3u1fbpfcp-watermark.image)
+最后三位：
+- mutexLocked 表示是否处于锁定状态
+- mutexWoken 表示是否处于唤醒状态
+- mutexStarving 表示是否处于饥饿状态
+
+```
+func (m *Mutex) Lock() {
+	// Fast path: grab unlocked mutex.
+	if atomic.CompareAndSwapInt32(&m.state, 0, mutexLocked) {
+		if race.Enabled {
+			race.Acquire(unsafe.Pointer(m))
+		}
+		return
+	}
+	// Slow path (outlined so that the fast path can be inlined)
+	m.lockSlow()
+}
+```
+- 当我们调用Lock方法的时候，会先尝试走Fast Path，也就是如果当前的互斥锁处于处于未加锁的状态，尝试加锁，只要加锁成功就返回。
+- 否则进入Slow Path
+
+```
+func (m *Mutex) lockSlow() {
+	var waitStartTime int64 // 等待时间
+	starving := false // 是否处于饥饿状态
+	awoke := false // 是否处于唤醒状态
+	iter := 0 // 自旋迭代次数
+	old := m.state
+	for {
+		// Don't spin in starvation mode, ownership is handed off to waiters
+		// so we won't be able to acquire the mutex anyway.
+		if old&(mutexLocked|mutexStarving) == mutexLocked && runtime_canSpin(iter) {
+			// Active spinning makes sense.
+			// Try to set mutexWoken flag to inform Unlock
+			// to not wake other blocked goroutines.
+			if !awoke && old&mutexWoken == 0 && old>>mutexWaiterShift != 0 &&
+				atomic.CompareAndSwapInt32(&m.state, old, old|mutexWoken) {
+				awoke = true
+			}
+			runtime_doSpin()
+			iter++
+			old = m.state
+			continue
+		}
+```
+for循环不断的去尝试获取互斥锁，第一步是判断是否进入自选，进入自旋的条件？
+- 当前互斥锁的状态是非饥饿状态。并且已经被锁定了
+- 自选次数不超过4次
+- cpu个数大于1，必须是多核cpu
+- 当前正在执行中，且队列空闲的p个数>=1
+
+```
+func sync_runtime_canSpin(i int) bool {
+	if i >= active_spin || ncpu <= 1 || gomaxprocs <= int32(sched.npidle+sched.nmspinning)+1 {
+		return false
+	}
+	if p := getg().m.p.ptr(); !runqempty(p) {
+		return false
+	}
+	return true
+}
+```
+解锁
+```
+// 解锁一个没有锁定的互斥量会报运行时错误
+// 解锁没有绑定关系，可以一个 goroutine 锁定，另外一个 goroutine 解锁
+func (m *Mutex) Unlock() {
+	// Fast path: 直接尝试设置 state 的值，进行解锁
+	new := atomic.AddInt32(&m.state, -mutexLocked)
+    // 如果减去了 mutexLocked 的值之后不为零就会进入慢速通道，这说明有可能失败了，或者是还有其他的 goroutine 等着
+	if new != 0 {
+		// Outlined slow path to allow inlining the fast path.
+		// To hide unlockSlow during tracing we skip one extra frame when tracing GoUnblock.
+		m.unlockSlow(new)
+	}
+}
+
+func (m *Mutex) unlockSlow(new int32) {
+    // 解锁一个没有锁定的互斥量会报运行时错误
+	if (new+mutexLocked)&mutexLocked == 0 {
+		throw("sync: unlock of unlocked mutex")
+	}
+    // 判断是否处于饥饿模式
+	if new&mutexStarving == 0 {
+        // 正常模式
+		old := new
+		for {
+			// 如果当前没有等待者.或者 goroutine 已经被唤醒或者是处于锁定状态了，就直接返回
+			if old>>mutexWaiterShift == 0 || old&(mutexLocked|mutexWoken|mutexStarving) != 0 {
+				return
+			}
+			// 唤醒等待者并且移交锁的控制权
+			new = (old - 1<<mutexWaiterShift) | mutexWoken
+			if atomic.CompareAndSwapInt32(&m.state, old, new) {
+				runtime_Semrelease(&m.sema, false, 1)
+				return
+			}
+			old = m.state
+		}
+	} else {
+		// 饥饿模式，走 handoff 流程，直接将锁交给下一个等待的 goroutine，注意这个时候不会从饥饿模式中退出
+		runtime_Semrelease(&m.sema, true, 1)
+	}
+}
+```
+
