@@ -54,3 +54,10 @@ func (self *luaState) PushFString(fmtStr string, a ...interface{}) {
 	str := fmt.Sprintf(fmtStr, a...)
 	self.stack.push(str)
 }
+
+// 将线程推入栈顶
+func (self *luaState) PushThread() bool {
+	self.stack.push(self)
+
+	return self.isMainThread()
+}

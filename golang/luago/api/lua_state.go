@@ -28,6 +28,7 @@ type BasicAPI interface {
 	Remove(idx int)
 	Rotate(idx, n int)
 	SetTop(idx int)
+	XMove(to LuaState, n int)		// 栈操作，两个线程栈之间移动元素
 	/* access functions (stack -> Go) */
 	TypeName(tp LuaType) string
 	Type(idx int) LuaType
@@ -50,6 +51,7 @@ type BasicAPI interface {
 	ToString(idx int) string
 	ToStringX(idx int) (string, bool)
 	ToGoFunction(idx int) GoFunction
+	ToThread(idx int) LuaState
 	ToPointer(idx int) interface{}
 	RawLen(idx int) uint
 	/* push functions (Go -> stack) */
@@ -62,6 +64,7 @@ type BasicAPI interface {
 	PushGoFunction(f GoFunction)
 	PushGoClosure(f GoFunction, n int)
 	PushGlobalTable()
+	PushThread() bool		// 线程类型操作
 	/* Comparison and arithmetic functions */
 	Arith(op ArithOp)
 	Compare(idx1, idx2 int, op CompareOp) bool
@@ -95,4 +98,11 @@ type BasicAPI interface {
 	Next(idx int) bool
 	Error() int
 	StringToNumber(s string) bool
+	/* coroutine functions */
+	NewThread() LuaState		// 新建
+	Resume(from LuaState, nArgs int) int		// 恢复转换
+	Yield(nResults int) int	// 挂起
+	Status() int	// 状态
+	IsYieldable() bool	// 是否是快起
+	GetStack() bool // debug	//
 }

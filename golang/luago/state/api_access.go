@@ -168,3 +168,14 @@ func (self *luaState) ToPointer(idx int) interface{} {
 	// todo
 	return self.stack.get(idx)
 }
+
+// 把指定索引处的值转换成线程返回，转换失败返回nil
+func (self *luaState) ToThread(idx int) LuaState {
+	val := self.stack.get(idx)
+	if val != nil {
+		if ls, ok := val.(*luaState); ok {
+			return ls
+		}
+	}
+	return nil
+}
