@@ -1,28 +1,27 @@
 
 ---
-- [data structure](https://github.com/hushui502/daily/tree/master/golang/algo)
-- [goroutine pool](https://github.com/hushui502/daily/tree/master/golang/ants)
-- [design pattern](https://github.com/hushui502/daily/tree/master/golang/design-pattern)
-- [fb-photo-download-tool](https://github.com/hushui502/daily/tree/master/golang/fbpages)
-- [distribute cache](https://github.com/hushui502/daily/tree/master/golang/gee-cache)
-- [orm](https://github.com/hushui502/daily/tree/master/golang/gee-orm)
-- [web frame](https://github.com/hushui502/daily/tree/master/golang/gee-web)
-- [rpc frame](https://github.com/hushui502/daily/tree/master/golang/geerpc)
-- [httptunnel](https://github.com/hushui502/daily/tree/master/golang/httptunnel)
-- [net proxy](https://github.com/hushui502/daily/tree/master/golang/go-proxy)
-- [breaker](https://github.com/hushui502/daily/tree/master/golang/gobreaker)
-- [Multi-threaded download tool](https://github.com/hushui502/daily/tree/master/golang/godownload)
-- [Go program pattern](https://github.com/hushui502/daily/tree/master/golang/gopattern)
-- [limiter](https://github.com/hushui502/daily/tree/master/golang/limiter)
+- [data structure](https://github.com/hushui502/daily/tree/master/golang/algo): Some data structures and algorithms implemented in golang.
+- [goroutine pool](https://github.com/hushui502/daily/tree/master/golang/ants): A goroutine pool with fixed capacity, managing and recycling a massive number of goroutines, allowing developers to limit the number of goroutines in your concurrent programs.
+- [design pattern](https://github.com/hushui502/daily/tree/master/golang/design-pattern): 23 design patterns implemented in golang.
+- [fb-photo-download-tool](https://github.com/hushui502/daily/tree/master/golang/fbpages): Facebook's photo downloader.
+- [distribute cache](https://github.com/hushui502/daily/tree/master/golang/gee-cache): GeeCache is a groupcache-like distributed cache.
+- [orm](https://github.com/hushui502/daily/tree/master/golang/gee-orm): GeeORM is a gorm-like and xorm-like object relational mapping library.
+- [web frame](https://github.com/hushui502/daily/tree/master/golang/gee-web): GeeWeb is a gin-like framework.
+- [rpc frame](https://github.com/hushui502/daily/tree/master/golang/geerpc): GeeRPC is a net/rpc-like RPC framework.
+- [httptunnel](https://github.com/hushui502/daily/tree/master/golang/httptunnel): A tool to tunnel TCP over HTTP.
+- [net proxy](https://github.com/hushui502/daily/tree/master/golang/go-proxy): A proxy server which can forward http or https requests to remote servers.
+- [breaker](https://github.com/hushui502/daily/tree/master/golang/gobreaker): gobreaker implements the Circuit Breaker pattern in Go.
+- [Multi-threaded download tool](https://github.com/hushui502/daily/tree/master/golang/godownload): A multi-threaded download tool in Go.
+- [Go program pattern](https://github.com/hushui502/daily/tree/master/golang/gopattern): Programming paradigm in Go.
+- [limiter](https://github.com/hushui502/daily/tree/master/golang/limiter): Dead simple rate limit middleware for Go.
 - [pubsub](https://github.com/hushui502/daily/tree/master/golang/pubsub)
 - [singleflight](https://github.com/hushui502/daily/tree/master/golang/singleflight)
-- [snowflakes](https://github.com/hushui502/daily/tree/master/golang/snowflake)
-- [tcpchat](https://github.com/hushui502/daily/tree/master/golang/tcpchat)
-- [goplayer](https://github.com/hushui502/daily/tree/master/golang/goplayer)
-- [uber rule](https://github.com/hushui502/daily/tree/master/golang/uber)
-- [leetcode solution](https://github.com/hushui502/daily/tree/master/leetcode)
-- [blockchain](https://github.com/hushui502/daily/tree/master/blockchain/blockchain/v1)
-- [paxos](https://github.com/hushui502/daily/tree/master/blockchain/consensus/paxos)
+- [snowflakes](https://github.com/hushui502/daily/tree/master/golang/snowflake): Snowflake algorithm in Go.
+- [tcpchat](https://github.com/hushui502/daily/tree/master/golang/tcpchat): A TCP chat tool in Go.
+- [goplayer](https://github.com/hushui502/daily/tree/master/golang/goplayer): an HTML5 and Go-based music player.
+- [uber rule](https://github.com/hushui502/daily/tree/master/golang/uber): The Uber Go Style Guide.
+- [blockchain](https://github.com/hushui502/daily/tree/master/blockchain/blockchain/v1): Blockchain implementation in Go.
+- [paxos](https://github.com/hushui502/daily/tree/master/blockchain/consensus/paxos): Paxos algorithm in Go.
 - [MerkelTree](https://github.com/hushui502/daily/tree/master/blockchain/merkletree)
 - [p2p](https://github.com/hushui502/daily/tree/master/blockchain/p2p)
 - [proof of stake](https://github.com/hushui502/daily/tree/master/blockchain/pos)
@@ -32,8 +31,8 @@
 - [sniff](https://github.com/hushui502/daily/tree/master/golang/gosniff)
 - [paxosV2](https://github.com/hushui502/daily/tree/master/blockchain/consensus/paxosv2)
 - [netstat tool](https://github.com/hushui502/daily/tree/master/golang/go-netstat)
-- [lru](https://github.com/hushui502/daily/tree/master/golang/lru)
-- [tcp/ip](https://github.com/hushui502/daily/tree/master/golang/lectcp)
+- [lru](https://github.com/hushui502/daily/tree/master/golang/lru): LRU algorithm in Go. 
+- [tcp/ip](https://github.com/hushui502/daily/tree/master/golang/lectcp): Tiny TCP/IP protocol stack for lectures implemented in Go.
 - [wormhole](https://github.com/hushui502/daily/tree/master/golang/wormhole)
 - [M to M chan](https://github.com/hushui502/daily/tree/master/golang/gochan)
 - [dl](https://github.com/hushui502/daily/tree/master/golang/dl)
@@ -49,8 +48,8 @@
 - [f2bs](https://github.com/hushui502/daily/tree/master/golang/f2bs)
 - [otp](https://github.com/hushui502/daily/tree/master/golang/otp)
 - [f2bs](https://github.com/hushui502/daily/tree/master/golang/f2bs)
-- [ffpprof](https://github.com/hushui502/daily/tree/master/golang/ffpprof)
-- [go-sec](https://github.com/hushui502/daily/tree/master/golang/go-sec)
-- [pineaple](https://github.com/hushui502/daily/tree/master/golang/pineaple)
-- [luago](https://github.com/hushui502/daily/tree/master/golang/luago)
+- [ffpprof](https://github.com/hushui502/daily/tree/master/golang/ffpprof): 
+- [go-sec](https://github.com/hushui502/daily/tree/master/golang/go-sec): 
+- [pineaple](https://github.com/hushui502/daily/tree/master/golang/pineaple): Simple Programming Language Implementation.
+- [luago](https://github.com/hushui502/daily/tree/master/golang/luago): Lua programming language implementation in Golang.
 - [raft](https://github.com/hushui502/daily/tree/master/golang/raft)
