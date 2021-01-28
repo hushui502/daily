@@ -14,33 +14,33 @@
 - [Multi-threaded download tool](https://github.com/hushui502/daily/tree/master/golang/godownload): A multi-threaded download tool in Go.
 - [Go program pattern](https://github.com/hushui502/daily/tree/master/golang/gopattern): Programming paradigm in Go.
 - [limiter](https://github.com/hushui502/daily/tree/master/golang/limiter): Dead simple rate limit middleware for Go.
-- [pubsub](https://github.com/hushui502/daily/tree/master/golang/pubsub)
-- [singleflight](https://github.com/hushui502/daily/tree/master/golang/singleflight)
+- [pubsub](https://github.com/hushui502/daily/tree/master/golang/pubsub): Publish Subscription Process.
+- [singleflight](https://github.com/hushui502/daily/tree/master/golang/singleflight): singflight implementation in Go.
 - [snowflakes](https://github.com/hushui502/daily/tree/master/golang/snowflake): Snowflake algorithm in Go.
 - [tcpchat](https://github.com/hushui502/daily/tree/master/golang/tcpchat): A TCP chat tool in Go.
 - [goplayer](https://github.com/hushui502/daily/tree/master/golang/goplayer): an HTML5 and Go-based music player.
 - [uber rule](https://github.com/hushui502/daily/tree/master/golang/uber): The Uber Go Style Guide.
 - [blockchain](https://github.com/hushui502/daily/tree/master/blockchain/blockchain/v1): Blockchain implementation in Go.
 - [paxos](https://github.com/hushui502/daily/tree/master/blockchain/consensus/paxos): Paxos algorithm in Go.
-- [MerkelTree](https://github.com/hushui502/daily/tree/master/blockchain/merkletree)
-- [p2p](https://github.com/hushui502/daily/tree/master/blockchain/p2p)
-- [proof of stake](https://github.com/hushui502/daily/tree/master/blockchain/pos)
-- [proof of work](https://github.com/hushui502/daily/tree/master/blockchain/simplepow)
-- [signtx](https://github.com/hushui502/daily/tree/master/blockchain/signtx)
-- [crawler](https://github.com/hushui502/daily/tree/master/golang/iloveck)
-- [sniff](https://github.com/hushui502/daily/tree/master/golang/gosniff)
-- [paxosV2](https://github.com/hushui502/daily/tree/master/blockchain/consensus/paxosv2)
-- [netstat tool](https://github.com/hushui502/daily/tree/master/golang/go-netstat)
+- [MerkelTree](https://github.com/hushui502/daily/tree/master/blockchain/merkletree): Merkletree implementation in Go.
+- [p2p](https://github.com/hushui502/daily/tree/master/blockchain/p2p): A simple p2p network.
+- [proof of stake](https://github.com/hushui502/daily/tree/master/blockchain/pos): Proof of Stake.
+- [proof of work](https://github.com/hushui502/daily/tree/master/blockchain/simplepow): Proof of Work.
+- [signtx](https://github.com/hushui502/daily/tree/master/blockchain/signtx): Transaction Signature.
+- [crawler](https://github.com/hushui502/daily/tree/master/golang/iloveck): Ilover crawler.
+- [sniff](https://github.com/hushui502/daily/tree/master/golang/gosniff): Network Sniffer.
+- [paxosV2](https://github.com/hushui502/daily/tree/master/blockchain/consensus/paxosv2): Consensus algorithm-Paxos in Go.
+- [netstat tool](https://github.com/hushui502/daily/tree/master/golang/go-netstat): A netstat Tool in Go.
 - [lru](https://github.com/hushui502/daily/tree/master/golang/lru): LRU algorithm in Go. 
 - [tcp/ip](https://github.com/hushui502/daily/tree/master/golang/lectcp): Tiny TCP/IP protocol stack for lectures implemented in Go.
 - [wormhole](https://github.com/hushui502/daily/tree/master/golang/wormhole)
-- [M to M chan](https://github.com/hushui502/daily/tree/master/golang/gochan)
-- [dl](https://github.com/hushui502/daily/tree/master/golang/dl)
-- [ratelimit](https://github.com/hushui502/daily/tree/master/golang/ratelimit)
-- [filestorage](https://github.com/hushui502/daily/tree/master/golang/filestorage)
-- [ffcron](https://github.com/hushui502/daily/tree/master/golang/ffcron)
-- [network-go](https://github.com/hushui502/daily/tree/master/golang/network)
-- [wasmserver](https://github.com/hushui502/daily/tree/master/golang/wasmserver)
+- [M to M chan](https://github.com/hushui502/daily/tree/master/golang/gochan): M to M chan.
+- [dl](https://github.com/hushui502/daily/tree/master/golang/dl): A concurrent network downloader
+- [ratelimit](https://github.com/hushui502/daily/tree/master/golang/ratelimit): Dead simple rate limiter for Go.
+- [filestorage](https://github.com/hushui502/daily/tree/master/golang/filestorage): A file storage system.
+- [ffcron](https://github.com/hushui502/daily/tree/master/golang/ffcron): 
+- [network-go](https://github.com/hushui502/daily/tree/master/golang/network): Some cases of the network in Go.
+- [wasmserver](https://github.com/hushui502/daily/tree/master/golang/wasmserver): 
 - [fluentpy](https://github.com/hushui502/daily/tree/master/python/fluentpython)
 - [gsd](https://github.com/hushui502/daily/tree/master/golang/gsd)
 - [hsfs](https://github.com/hushui502/daily/tree/master/golang/hsfs)
@@ -52,4 +52,4 @@
 - [go-sec](https://github.com/hushui502/daily/tree/master/golang/go-sec): 
 - [pineaple](https://github.com/hushui502/daily/tree/master/golang/pineaple): Simple Programming Language Implementation.
 - [luago](https://github.com/hushui502/daily/tree/master/golang/luago): Lua programming language implementation in Golang.
-- [raft](https://github.com/hushui502/daily/tree/master/golang/raft)
+- [raft](https://github.com/hushui502/daily/tree/master/golang/raft):  Consensus algorithm-Raft in Go.
