@@ -1,7 +1,7 @@
 
 ---
 - [data structure](https://github.com/hushui502/daily/tree/master/golang/algo): Some data structures and algorithms implemented in golang.
-- [goroutine pool](https://github.com/hushui502/daily/tree/master/golang/ants): A goroutine pool with fixed capacity, managing and recycling a massive number of goroutines, allowing developers to limit the number of goroutines in your concurrent programs.
+- [goroutine pool](https://github.com/hushui502/daily/tree/master/golang/ants): A goroutine pool with fixed capacity, managing and recycling a massive number of goroutines.
 - [design pattern](https://github.com/hushui502/daily/tree/master/golang/design-pattern): 23 design patterns implemented in golang.
 - [fb-photo-download-tool](https://github.com/hushui502/daily/tree/master/golang/fbpages): Facebook's photo downloader.
 - [distribute cache](https://github.com/hushui502/daily/tree/master/golang/gee-cache): GeeCache is a groupcache-like distributed cache.
@@ -33,23 +33,22 @@
 - [netstat tool](https://github.com/hushui502/daily/tree/master/golang/go-netstat): A netstat Tool in Go.
 - [lru](https://github.com/hushui502/daily/tree/master/golang/lru): LRU algorithm in Go. 
 - [tcp/ip](https://github.com/hushui502/daily/tree/master/golang/lectcp): Tiny TCP/IP protocol stack for lectures implemented in Go.
-- [wormhole](https://github.com/hushui502/daily/tree/master/golang/wormhole)
+- [wormhole](https://github.com/hushui502/daily/tree/master/golang/wormhole): A simple program that transparently proxies any raw TCP connection from one TCP socket to another.
 - [M to M chan](https://github.com/hushui502/daily/tree/master/golang/gochan): M to M chan.
 - [dl](https://github.com/hushui502/daily/tree/master/golang/dl): A concurrent network downloader
 - [ratelimit](https://github.com/hushui502/daily/tree/master/golang/ratelimit): Dead simple rate limiter for Go.
 - [filestorage](https://github.com/hushui502/daily/tree/master/golang/filestorage): A file storage system.
-- [ffcron](https://github.com/hushui502/daily/tree/master/golang/ffcron): 
+- [ffcron](https://github.com/hushui502/daily/tree/master/golang/ffcron): A cron job lib for scheduling your job.
 - [network-go](https://github.com/hushui502/daily/tree/master/golang/network): Some cases of the network in Go.
-- [wasmserver](https://github.com/hushui502/daily/tree/master/golang/wasmserver): 
-- [fluentpy](https://github.com/hushui502/daily/tree/master/python/fluentpython)
-- [gsd](https://github.com/hushui502/daily/tree/master/golang/gsd)
-- [hsfs](https://github.com/hushui502/daily/tree/master/golang/hsfs)
-- [v2h](https://github.com/hushui502/daily/tree/master/golang/v2h)
-- [f2bs](https://github.com/hushui502/daily/tree/master/golang/f2bs)
-- [otp](https://github.com/hushui502/daily/tree/master/golang/otp)
-- [f2bs](https://github.com/hushui502/daily/tree/master/golang/f2bs)
-- [ffpprof](https://github.com/hushui502/daily/tree/master/golang/ffpprof): 
-- [go-sec](https://github.com/hushui502/daily/tree/master/golang/go-sec): 
+- [wasmserver](https://github.com/hushui502/daily/tree/master/golang/wasmserver): A wasm server.
+- [fluentpy](https://github.com/hushui502/daily/tree/master/python/fluentpython): Fluent python cases.
+- [gsd](https://github.com/hushui502/daily/tree/master/golang/gsd): A simple password generator.
+- [hsfs](https://github.com/hushui502/daily/tree/master/golang/hsfs): A file storage system.
+- [v2h](https://github.com/hushui502/daily/tree/master/golang/v2h): A convert value to hex tool.
+- [f2bs](https://github.com/hushui502/daily/tree/master/golang/f2bs): A file to byte slice tool.
+- [otp](https://github.com/hushui502/daily/tree/master/golang/otp): One Time Password utilities in Golang.
+- [ffpprof](https://github.com/hushui502/daily/tree/master/golang/ffpprof): ffpprof is a easy-to-setup pprof profile data collection library for development time. 
+- [go-sec](https://github.com/hushui502/daily/tree/master/golang/go-sec): Security in Go.
 - [pineaple](https://github.com/hushui502/daily/tree/master/golang/pineaple): Simple Programming Language Implementation.
 - [luago](https://github.com/hushui502/daily/tree/master/golang/luago): Lua programming language implementation in Golang.
 - [raft](https://github.com/hushui502/daily/tree/master/golang/raft):  Consensus algorithm-Raft in Go.
