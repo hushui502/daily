@@ -52,3 +52,6 @@
 - [pineaple](https://github.com/hushui502/daily/tree/master/golang/pineaple): Simple Programming Language Implementation.
 - [luago](https://github.com/hushui502/daily/tree/master/golang/luago): Lua programming language implementation in Golang.
 - [raft](https://github.com/hushui502/daily/tree/master/golang/raft):  Consensus algorithm-Raft in Go.
+- [colortest](https://github.com/hushui502/daily/tree/master/golang/colortest):
+- [minikv](https://github.com/hushui502/daily/tree/master/golang/minikv):
+- [copy](https://github.com/hushui502/daily/tree/master/golang/copy):
