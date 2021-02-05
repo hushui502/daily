@@ -51,7 +51,7 @@
 - [go-sec](https://github.com/hushui502/daily/tree/master/golang/go-sec): Security in Go.
 - [pineaple](https://github.com/hushui502/daily/tree/master/golang/pineaple): Simple Programming Language Implementation.
 - [luago](https://github.com/hushui502/daily/tree/master/golang/luago): Lua programming language implementation in Golang.
-- [raft](https://github.com/hushui502/daily/tree/master/golang/raft):  Consensus algorithm-Raft in Go.
-- [colortest](https://github.com/hushui502/daily/tree/master/golang/colortest):
-- [minikv](https://github.com/hushui502/daily/tree/master/golang/minikv):
-- [copy](https://github.com/hushui502/daily/tree/master/golang/copy):
+- [raft](https://github.com/hushui502/daily/tree/master/golang/raft):  Consensus algorithm-Raft in Go.  // TODO
+- [colortest](https://github.com/hushui502/daily/tree/master/golang/colortest): A lib of user-defined test log colors 
+- [minikv](https://github.com/hushui502/daily/tree/master/golang/minikv): A mini key-value database // TODO
+- [copy](https://github.com/hushui502/daily/tree/master/golang/copy): 
