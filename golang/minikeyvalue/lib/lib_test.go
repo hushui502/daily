@@ -1,4 +1,4 @@
-package lib
+package main
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 
 func Test_key2path(t *testing.T) {
 	tests := map[string]string{
-		"hello": "/5d/41/aGVsbG8=",
+		"hello":      "/5d/41/aGVsbG8=",
 		"helloworld": "/fc/5e/aGVsbG93b3JsZA==",
 	}
 	for k, v := range tests {

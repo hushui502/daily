@@ -85,13 +85,13 @@ func main() {
 					continue
 				}
 
-				ss, err := remote_get("http://localhost:3000/"+key)
+				ss, err := remote_get("http://localhost:3000/" + key)
 				if err != nil || ss != value {
 					resp <- false
 					continue
 				}
 
-				if err := remote_delete("http://localhost:3000/"+key); err != nil {
+				if err := remote_delete("http://localhost:3000/" + key); err != nil {
 					fmt.Println("DELETE FAILED ", err)
 					resp <- false
 					continue

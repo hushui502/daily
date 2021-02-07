@@ -1,4 +1,4 @@
-package lib
+package main
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -25,8 +26,8 @@ const (
 
 type Record struct {
 	rvolumes []string
-	deleted Deleted
-	hash string
+	deleted  Deleted
+	hash     string
 }
 
 func toRecord(data []byte) Record {
@@ -56,7 +57,7 @@ func fromRecord(rec Record) []byte {
 	if len(rec.hash) == 32 {
 		cc += "HASH" + rec.hash
 	}
-	return []byte(cc+strings.Join(rec.rvolumes, ","))
+	return []byte(cc + strings.Join(rec.rvolumes, ","))
 }
 
 // HASH FUNCTIONS
@@ -69,7 +70,7 @@ func key2path(key []byte) string {
 }
 
 type sortvol struct {
-	score []byte
+	score  []byte
 	volume string
 }
 
@@ -105,9 +106,9 @@ func key2volume(key []byte, volumes []string, count int, svcount int) []string {
 		if svcount == 1 {
 			volume = sv.volume
 		} else {
-			svhash := uint(sv.score[12]) << 24 + uint(sv.score[13]) << 16 +
-				uint(sv.score[14]) << 8 + uint(sv.score[15])
-			volume = fmt.Sprintf("%s/sv%02X", sv.volume, svhash % uint(svcount))
+			svhash := uint(sv.score[12])<<24 + uint(sv.score[13])<<16 +
+				uint(sv.score[14])<<8 + uint(sv.score[15])
+			volume = fmt.Sprintf("%s/sv%02X", sv.volume, svhash%uint(svcount))
 		}
 		ret = append(ret, volume)
 	}
@@ -126,7 +127,6 @@ func needs_rebalance(volumes []string, kvolumes []string) bool {
 	}
 	return false
 }
-
 
 // *** Remote Access Functions ***
 
@@ -193,4 +193,3 @@ func remote_head(remote string, timeout time.Duration) bool {
 	defer resp.Body.Close()
 	return resp.StatusCode == 200
 }
-
