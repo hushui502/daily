@@ -6,69 +6,58 @@ import (
 	"shadowsocks/core"
 )
 
-/*
-	运行在本机的 local 端的职责是把本机程序发送给它的数据经过加密后转发给墙外的代理服务器，总体工作流程如下：
-
-	监听来自本机浏览器的代理请求；
-	转发前加密数据；
-	转发socket数据到墙外代理服务端；
-	把服务端返回的数据转发给用户的浏览器。
-*/
-
+// 新建一个本地端
+// 本地端的职责是:
+// 1. 监听来自本机浏览器的代理请求
+// 2. 转发前加密数据
+// 3. 转发socket数据到墙外代理服务端
+// 4. 把服务端返回的数据转发给用户的浏览器
 type LsLocal struct {
-	*core.SecureSocket
+	Cipher *core.Cipher
+	ListenAddr *net.TCPAddr
+	RemoteAddr *net.TCPAddr
 }
 
-func New(password *core.Password, listenAddr, remoteAddr *net.TCPAddr) *LsLocal  {
-	return &LsLocal{
-		SecureSocket: &core.SecureSocket{
-			Cipher:     core.NewCipher(password),
-			ListenAddr: listenAddr,
-			RemoteAddr: remoteAddr,
-		},
+func NewLsLocal(password string, listenAddr, remoteAddr string) (*LsLocal, error) {
+	bsPassword, err := core.ParsePassword(password)
+	if err != nil {
+		return nil, err
 	}
+	structListenAddr, err := net.ResolveTCPAddr("tcp", listenAddr)
+	if err != nil {
+		return nil, err
+	}
+	structRemoteAddr, err := net.ResolveTCPAddr("tcp", remoteAddr)
+	if err != nil {
+		return nil, err
+	}
+	return &LsLocal{
+		Cipher:     core.NewCipher(bsPassword),
+		ListenAddr: structListenAddr,
+		RemoteAddr: structRemoteAddr,
+	}, nil
 }
 
 // 本地段监听，接收来自本机浏览器的连接
-func (local *LsLocal) Listen(didListen func(listenAddr net.Addr)) error {
-	listener, err := net.ListenTCP("tcp", local.ListenAddr)
-	if err != nil {
-		return err
-	}
-	defer listener.Close()
-
-	if didListen != nil {
-		didListen(listener.Addr())
-	}
-
-	for {
-		userConn, err := listener.AcceptTCP()
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		// userConn被关闭的时候需要清除所有数据
-		userConn.SetLinger(0)
-		go local.handleConn(userConn)
-	}
+func (local *LsLocal) Listen(didListen func(listenAddr *net.TCPAddr)) error {
+	return core.ListenEncryptedTCP(local.ListenAddr, local.Cipher, local.handleConn, didListen)
 }
 
-func (local *LsLocal) handleConn(userConn *net.TCPConn) {
+func (local *LsLocal) handleConn(userConn *core.SecureTCPConn) {
 	defer userConn.Close()
 
-	proxyServer, err := local.DialRemote()
+	proxyServer, err := core.DialEncryptedTCP(local.RemoteAddr, local.Cipher)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	defer proxyServer.Close()
 	// Conn被关闭的时候清除数据
-	proxyServer.SetLinger(0)
 
 	// 开始转发
 	// proxyServer -> 读取数据 -> localUser
 	go func() {
-		err := local.DecodeCopy(userConn, proxyServer)
+		err := proxyServer.DecodeCopy(userConn)
 		if err != nil {
 			// 在copy过程中，可能存在网络超时等待，error被return，只要有一个发生了错误就退出
 			userConn.Close()
@@ -77,5 +66,5 @@ func (local *LsLocal) handleConn(userConn *net.TCPConn) {
 	}()
 
 	// 从 localUser 发送数据发送到 proxyServer，这里因为处在翻墙阶段出现网络错误的概率更大
-	local.EncodeCopy(proxyServer, userConn)
+	userConn.EncodeCopy(proxyServer)
 }

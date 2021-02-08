@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/binary"
-	"log"
 	"net"
 	"shadowsocks/core"
 )
@@ -13,45 +12,33 @@ import (
 // 2. 解密本地代理客户端请求的数据，解析 SOCKS5 协议，连接用户浏览器真正想要连接的远程服务器
 // 3. 转发用户浏览器真正想要连接的远程服务器返回的数据的加密后的内容到本地代理客户端
 type LsServer struct {
-	*core.SecureSocket
+	Cipher *core.Cipher
+	ListenAddr *net.TCPAddr
 }
 
-func New(password *core.Password, listenAddr *net.TCPAddr) *LsServer {
-	return &LsServer{
-		SecureSocket: &core.SecureSocket{
-			Cipher:     core.NewCipher(password),
-			ListenAddr: listenAddr,
-		},
-	}
-}
-
-func (lsServer *LsServer) Listen(didListen func(listenAddr net.Addr)) error {
-	listener, err := net.ListenTCP("tcp", lsServer.ListenAddr)
+func NewLsServer(password string, listenAddr string) (*LsServer, error) {
+	bsPassword, err := core.ParsePassword(password)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer listener.Close()
+	structListenAddr, err := net.ResolveTCPAddr("tcp", listenAddr)
+	if err != nil {
+		return nil, err
+	}
+	return &LsServer{
+		Cipher:     core.NewCipher(bsPassword),
+		ListenAddr: structListenAddr,
+	}, nil
+}
 
-	if didListen != nil {
-		didListen(listener.Addr())
-	}
-
-	for {
-		localConn, err := listener.AcceptTCP()
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		localConn.SetLinger(0)
-		go lsServer.handleConn(localConn)
-	}
+func (lsServer *LsServer) Listen(didListen func(listenAddr *net.TCPAddr)) error {
+	return core.ListenEncryptedTCP(lsServer.ListenAddr, lsServer.Cipher, lsServer.handleConn, didListen)
 }
 
 // 解析socks5协议
 // https://www.ietf.org/rfc/rfc1928.txt
-func (lsServer *LsServer) handleConn(localConn *net.TCPConn) {
+func (lsServer *LsServer) handleConn(localConn *core.SecureTCPConn) {
 	defer localConn.Close()
-
 	buf := make([]byte, 256)
 	/**
 	   The localConn connects to the dstServer, and sends a ver
@@ -66,7 +53,7 @@ func (lsServer *LsServer) handleConn(localConn *net.TCPConn) {
 	   appear in the METHODS field.
 	*/
 	// 第一个字段VER代表版本号，SOCKS5默认位0x05，其固定长度为1字节
-	_, err := lsServer.DecodeRead(localConn, buf)
+	_, err := localConn.DecodeRead(buf)
 	// 只支持版本5
 	if err != nil || buf[0] != 0x05 {
 		return
@@ -83,7 +70,7 @@ func (lsServer *LsServer) handleConn(localConn *net.TCPConn) {
 		          +----+--------+
 	*/
 	// 不需要验证
-	lsServer.EncodeWrite(localConn, []byte{0x05, 0x00})
+	localConn.EncodeWrite([]byte{0x05, 0x06})
 
 	/**
 	  +----+-----+-------+------+----------+----------+
@@ -93,7 +80,7 @@ func (lsServer *LsServer) handleConn(localConn *net.TCPConn) {
 	  +----+-----+-------+------+----------+----------+
 	*/
 	// 获取真正的远称服务地址
-	n, err := lsServer.DecodeRead(localConn, buf)
+	n, err := localConn.DecodeRead(buf)
 	// n 最短的长度为7 情况是ATY=3 DST.ADDR占用一个字节 值为0x0
 	if err != nil || n < 7 {
 		return
@@ -144,19 +131,22 @@ func (lsServer *LsServer) handleConn(localConn *net.TCPConn) {
 		  +----+-----+-------+------+----------+----------+
 		*/
 		// 响应客户端连接成功
-		lsServer.EncodeWrite(localConn, []byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+		localConn.EncodeWrite([]byte{0x05, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
 	}
 
 	// 进行转发
 	// localConn -> read content -> dstServer
 	go func() {
-		err := lsServer.DecodeCopy(dstServer, localConn)
+		err := localConn.DecodeCopy(dstServer)
 		if err != nil {
 			localConn.Close()
 			dstServer.Close()
 		}
 	}()
-
-	lsServer.EncodeCopy(localConn, dstServer)
+	// 从 dstServer 读取数据发送到 localUser，这里因为处在翻墙阶段出现网络错误的概率更大
+	(&core.SecureTCPConn{
+		Cipher:          localConn.Cipher,
+		ReadWriteCloser: dstServer,
+	}).EncodeCopy(localConn)
 }
 
