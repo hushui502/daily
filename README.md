@@ -60,3 +60,5 @@
 - [shadowsocks](https://github.com/hushui502/daily/tree/master/golang/shadowsocks): A shadowsocks case.(just for learning)
 - [minikeyvalue](https://github.com/hushui502/daily/tree/master/golang/minikeyvalue): A Simple key-value database.(create/rebuild...)\
 - [notify](https://github.com/hushui502/daily/tree/master/golang/notify): A simple Go lib for sending notifications to various messaging services.
+- [paxoskv](https://github.com/hushui502/daily/tree/master/golang/paxoskv): A simple K-V based on paxos.
+- [tinytcp](https://github.com/hushui502/daily/tree/master/golang/tinytcp): TCP implementation.
