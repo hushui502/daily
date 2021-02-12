@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package paxoskv;
+
+service PaxosKV {
+    // 第一阶段
+    rpc Prepare(Proposer) returns (Acceptor) {}
+    // 第二阶段
+    rpc Accept(Proposer) returns (Acceptor) {}
+}
+
+message BallotNum {
+    // 轮数
+    int64 N = 1;
+    // 发起这个轮数的提案者
+    int64 ProposerId = 2;
+}
+
+message Value {
+    // val值
+    int64 Vi64 = 1;
+}
+
+// E.g.: for a key-value record foo₀=0, to set foo=2, a paxos instance is
+// created to choose the value for key "foo", ver "1", i.e., foo₁
+message PaxosInstanceId {
+    string Key = 1;
+    int64 Ver = 2;
+}
+
+message Acceptor {
+    // 上一次接受的轮数值
+    BallotNum LastBal = 1;
+    // 当前的val
+    Value Val = 2;
+    // 当前val的轮数
+    BallotNum VBal = 3;
+}
+
+message Proposer {
+    // 一个paxos实例
+    PaxosInstanceId Id = 1;
+    // 发送的轮数
+    BallotNum Bal = 2;
+    // 发送的val
+    Value Val = 3;
+}
