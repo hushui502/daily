@@ -11,16 +11,16 @@ import (
 const IPVersion4 = 4
 
 type header struct {
-	VHL uint8
-	TOS uint8
-	Len uint16
-	Id uint16
-	Offset uint16
-	TTL uint8
+	VHL      uint8
+	TOS      uint8
+	Len      uint16
+	Id       uint16
+	Offset   uint16
+	TTL      uint8
 	Protocol net.ProtocolNumber
-	Sum uint16
-	Src Address
-	Dst Address
+	Sum      uint16
+	Src      Address
+	Dst      Address
 }
 
 type datagram struct {
@@ -37,7 +37,7 @@ func parse(data []byte) (*datagram, error) {
 	if err := binary.Read(buf, binary.BigEndian, &hdr); err != nil {
 		return nil, err
 	}
-	if hdr.VHL >> 4 != IPVersion4 {
+	if hdr.VHL>>4 != IPVersion4 {
 		return nil, fmt.Errorf("not ipv4 packet")
 	}
 	hlen := int((hdr.VHL & 0x0f) << 2)

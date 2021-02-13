@@ -7,8 +7,8 @@ import (
 )
 
 type header struct {
-	Dst Address
-	Src Address
+	Dst  Address
+	Src  Address
 	Type net.EthernetType
 }
 

@@ -3,7 +3,7 @@ package ip
 import "sync"
 
 type idManager struct {
-	num uint16
+	num   uint16
 	mutex sync.Mutex
 }
 

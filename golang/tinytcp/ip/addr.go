@@ -38,6 +38,10 @@ func (a Address) Bytes() []byte {
 	return a[:]
 }
 
+func (a Address) Len() uint8 {
+	return uint8(len(a))
+}
+
 func (a Address) String() string {
 	return fmt.Sprintf("%d.%d.%d.%d", a[0], a[1], a[2], a[3])
 }

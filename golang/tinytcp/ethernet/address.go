@@ -47,7 +47,6 @@ func (a Address) isGroupAddress() bool {
 	return (a[0] & 0x01) != 0
 }
 
-
 func (a Address) Bytes() []byte {
 	return a[:]
 }
