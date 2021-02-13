@@ -13,12 +13,12 @@ type header struct {
 }
 
 type Device struct {
-	name string
-	mtu int
+	name  string
+	mtu   int
 	queue chan []byte
 }
 
-type Address struct {}
+type Address struct{}
 
 func (Address) Bytes() []byte {
 	return []byte{}
@@ -91,7 +91,7 @@ func (d *Device) RxHandler(data []byte, callback net.LinkDeviceCallbackHandler) 
 	if err := binary.Read(buf, binary.BigEndian, &hdr); err != nil {
 		return
 	}
-	
+
 	callback(d, hdr.Type, buf.Bytes(), nil, nil)
 }
 

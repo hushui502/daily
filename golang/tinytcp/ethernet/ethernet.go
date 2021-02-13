@@ -10,18 +10,18 @@ import (
 )
 
 const (
-	headerSize = 14
-	trailerSize = 0
+	headerSize     = 14
+	trailerSize    = 0
 	maxPayloadSize = 1500
 	minPayloadSize = 46
-	minFrameSize = headerSize + minPayloadSize + trailerSize
+	minFrameSize   = headerSize + minPayloadSize + trailerSize
 	maxFrameSize   = headerSize + maxPayloadSize + trailerSize
 )
 
 type Device struct {
-	raw raw.Device
+	raw  raw.Device
 	addr Address
-	mtu int
+	mtu  int
 }
 
 var _ net.LinkDevice = (*Device)(nil)

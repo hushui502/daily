@@ -34,14 +34,14 @@ func (a *assembler) assemble() []*datagram {
 	var n = len(a.data)
 	var slen int
 	for done := 0; done < n; done += slen {
-		slen = min(n - done, a.mtu)
+		slen = min(n-done, a.mtu)
 		var flag uint16
 		if done+slen < n {
 			flag = 0x2000
 		}
 		offset := flag | uint16((done>>3)&0x1ffff)
 		var hlen = 20
-		var data = a.data[done:done+slen]
+		var data = a.data[done : done+slen]
 		datagram := &datagram{
 			header: header{
 				VHL:      uint8((4 << 4) | (hlen >> 2)),
