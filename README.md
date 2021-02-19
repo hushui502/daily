@@ -53,7 +53,6 @@
 - [luago](https://github.com/hushui502/daily/tree/master/golang/luago): Lua programming language implementation in Golang.
 - [raft](https://github.com/hushui502/daily/tree/master/golang/raft):  Consensus algorithm-Raft in Go.  // TODO
 - [colortest](https://github.com/hushui502/daily/tree/master/golang/colortest): A lib of user-defined test log colors 
-- [minikv](https://github.com/hushui502/daily/tree/master/golang/minikv): A mini key-value database // TODO
 - [copy](https://github.com/hushui502/daily/tree/master/golang/copy): 
 - [fpgo](https://github.com/hushui502/daily/tree/master/golang/fpgo): A useful collection of Go utilities.
 - [high-performance-go](https://github.com/hushui502/daily/tree/master/golang/high-performance-go): Some high-performance-go cases.
