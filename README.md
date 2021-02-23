@@ -61,3 +61,4 @@
 - [notify](https://github.com/hushui502/daily/tree/master/golang/notify): A simple Go lib for sending notifications to various messaging services.
 - [paxoskv](https://github.com/hushui502/daily/tree/master/golang/paxoskv): A simple K-V based on paxos.
 - [tinytcp](https://github.com/hushui502/daily/tree/master/golang/tinytcp): TCP implementation.
+- [concurrentmap](https://github.com/hushui502/daily/tree/master/golang/concurrentmap): A thread safe map
