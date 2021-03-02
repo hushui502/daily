@@ -19,15 +19,15 @@ type testRunner interface {
 type runnerImpl struct {
 	t *testing.T
 
-	clock *clock.Mock
+	clock       *clock.Mock
 	constructor func(int, ...Option) Limiter
-	count atomic.Int32
+	count       atomic.Int32
 	maxDuration time.Duration
-	doneCh chan struct{}
-	wg sync.WaitGroup
+	doneCh      chan struct{}
+	wg          sync.WaitGroup
 }
 
-func runTest(t *testing.T, fn func(testRunner))  {
+func runTest(t *testing.T, fn func(testRunner)) {
 	impls := []struct {
 		name        string
 		constructor func(int, ...Option) Limiter

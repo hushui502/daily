@@ -7,17 +7,17 @@ import (
 )
 
 type state struct {
-	last time.Time
+	last     time.Time
 	sleepFor time.Duration
 }
 
 type atomicLimiter struct {
-	state unsafe.Pointer
+	state   unsafe.Pointer
 	padding [56]byte
 
 	perRequest time.Duration
-	maxSlack time.Duration
-	clock Clock
+	maxSlack   time.Duration
+	clock      Clock
 }
 
 func newAtomicBased(rate int, opts ...Option) *atomicLimiter {
@@ -42,7 +42,7 @@ func newAtomicBased(rate int, opts ...Option) *atomicLimiter {
 func (t *atomicLimiter) Take() time.Time {
 	var (
 		newState state
-		taken bool
+		taken    bool
 		interval time.Duration
 	)
 

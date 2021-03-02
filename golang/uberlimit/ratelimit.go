@@ -17,7 +17,7 @@ type Clock interface {
 type config struct {
 	clock Clock
 	slack int
-	per time.Duration
+	per   time.Duration
 }
 
 func New(rate int, opts ...Option) Limiter {
@@ -72,7 +72,7 @@ func Per(per time.Duration) Option {
 	return perOption(per)
 }
 
-type unlimited struct {}
+type unlimited struct{}
 
 func NewUnlimited() Limiter {
 	return unlimited{}
@@ -81,4 +81,3 @@ func NewUnlimited() Limiter {
 func (unlimited) Take() time.Time {
 	return time.Now()
 }
-
