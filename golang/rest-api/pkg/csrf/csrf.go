@@ -1,0 +1,26 @@
+package csrf
+
+import (
+	"crypto/sha256"
+	"encoding/base64"
+	"io"
+	"rest-api/pkg/logger"
+)
+
+const (
+	CSRFHeader = "X-CSRF-Token"
+	// 32 bytes
+	csrfSalt = "KbWaoi5xtDC3GEfBa9ovQdzOzXsuVU9I"
+)
+
+func MakeToken(sid string, logger logger.Logger) string {
+	hash := sha256.New()
+	_, err := io.WriteString(hash, csrfSalt+sid)
+	if err != nil {
+		logger.Errorf("Make CSRF Token ", err)
+	}
+
+	token := base64.RawStdEncoding.EncodeToString(hash.Sum(nil))
+
+	return token
+}
