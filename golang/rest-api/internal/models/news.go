@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-
 // News base model
 type News struct {
 	NewsID    uuid.UUID `json:"news_id" db:"news_id" validate:"omitempty,uuid"`

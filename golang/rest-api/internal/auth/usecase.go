@@ -18,5 +18,3 @@ type UseCase interface {
 	GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*models.UsersList, error)
 	UploadAvatar(ctx context.Context, userID uuid.UUID, file models.UploadInput) (*models.User, error)
 }
-
-
