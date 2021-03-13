@@ -53,7 +53,7 @@
 - [luago](https://github.com/hushui502/daily/tree/master/golang/luago): Lua programming language implementation in Golang.
 - [raft](https://github.com/hushui502/daily/tree/master/golang/raft):  Consensus algorithm-Raft in Go.  // TODO
 - [colortest](https://github.com/hushui502/daily/tree/master/golang/colortest): A lib of user-defined test log colors 
-- [copy](https://github.com/hushui502/daily/tree/master/golang/copy): 
+- [copy](https://github.com/hushui502/daily/tree/master/golang/copy): a copy tool
 - [fpgo](https://github.com/hushui502/daily/tree/master/golang/fpgo): A useful collection of Go utilities.
 - [high-performance-go](https://github.com/hushui502/daily/tree/master/golang/high-performance-go): Some high-performance-go cases.
 - [shadowsocks](https://github.com/hushui502/daily/tree/master/golang/shadowsocks): A shadowsocks case.(just for learning)
@@ -63,4 +63,3 @@
 - [tinytcp](https://github.com/hushui502/daily/tree/master/golang/tinytcp): TCP implementation.
 - [concurrentmap](https://github.com/hushui502/daily/tree/master/golang/concurrentmap): A thread safe map
 - [code2img](https://github.com/hushui502/daily/tree/master/golang/code2img): code to img tool
-- [clean-](https://github.com/hushui502/daily/tree/master/golang/code2img): Golang Clean Architecture REST API example 
