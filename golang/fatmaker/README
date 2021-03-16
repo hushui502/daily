@@ -1,0 +1,6 @@
+## fatmaker
+
+a tool for making fat exec binaries
+```
+fat <output file> <input file 1> <input file 2> ...
+```
