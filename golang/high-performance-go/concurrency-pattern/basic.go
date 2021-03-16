@@ -22,5 +22,3 @@ func regular_print(msg string) {
 		time.Sleep(time.Second)
 	}
 }
-
-

@@ -33,8 +33,8 @@ func MD5All(root string) (map[string][md5.Size]byte, error) {
 
 type result struct {
 	path string
-	sum [md5.Size]byte
-	err error
+	sum  [md5.Size]byte
+	err  error
 }
 
 func sumFiles(done <-chan struct{}, root string) (<-chan result, <-chan error) {

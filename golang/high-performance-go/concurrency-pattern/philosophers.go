@@ -31,22 +31,22 @@ const N = 5
 var forks [N]chan int
 
 func requestForks(ID int) {
-	
+
 	leftFork, rightFork := (ID+N-1)%N, (ID+N+1)%N
-	
+
 	for {
 		select {
 		case forks[leftFork] <- ID:
 			select {
 			case forks[rightFork] <- ID:
-				
+
 				sleepTime := rand.Intn(10) + 10
 				fmt.Printf("Philosopher %d picks both forks and eats for %d milliseconds.\n", ID, sleepTime)
 				time.Sleep(time.Duration(sleepTime) * time.Millisecond)
-				
+
 				<-forks[leftFork]
 				<-forks[rightFork]
-				
+
 				return
 			default:
 				fmt.Printf("Philosopher %d can't pick his right fork then gave up.\n", ID)
@@ -55,7 +55,7 @@ func requestForks(ID int) {
 		default:
 			fmt.Printf("Philosopher %d can't pick both forks then gave up.\n", ID)
 		}
-		
+
 		time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 	}
 }

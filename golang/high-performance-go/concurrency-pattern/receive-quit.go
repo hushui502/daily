@@ -13,7 +13,7 @@ func main() {
 	fmt.Printf("Generator says: %s", <-quit)
 }
 
-func generator(msg string, quit chan string) <-chan string{
+func generator(msg string, quit chan string) <-chan string {
 	ch := make(chan string)
 
 	go func() {

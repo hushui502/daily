@@ -6,7 +6,7 @@ import (
 )
 
 type Message struct {
-	str string
+	str   string
 	block chan struct{}
 }
 
@@ -46,10 +46,6 @@ func generator(msg string) <-chan Message {
 			blockStep <- struct{}{}
 		}
 	}()
-	
+
 	return ch
 }
-
-
-
-
