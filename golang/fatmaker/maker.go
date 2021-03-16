@@ -1,4 +1,4 @@
-package fatmaker
+package main
 
 import (
 	"debug/macho"
@@ -10,13 +10,13 @@ import (
 
 const (
 	MagicFat64 = macho.MagicFat + 1
-	alignBits = 14
-	align = 1 << alignBits
+	alignBits  = 14
+	align      = 1 << alignBits
 )
 
 type input struct {
-	data []byte
-	cpu uint32
+	data   []byte
+	cpu    uint32
 	subcpu uint32
 	offset int64
 }
