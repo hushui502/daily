@@ -1,4 +1,4 @@
-package httperrors
+package httpErrors
 
 import (
 	"context"
@@ -80,6 +80,7 @@ func NewRestError(status int, err string, causes interface{}) RestErr {
 	}
 }
 
+// New Rest Error With Message
 func NewRestErrorWithMessage(status int, err string, causes interface{}) RestErr {
 	return RestError{
 		ErrStatus: status,
@@ -94,8 +95,34 @@ func NewRestErrorFromBytes(bytes []byte) (RestErr, error) {
 	if err := json.Unmarshal(bytes, &apiErr); err != nil {
 		return nil, errors.New("invalid json")
 	}
-
 	return apiErr, nil
+}
+
+// New Bad Request Error
+func NewBadRequestError(causes interface{}) RestErr {
+	return RestError{
+		ErrStatus: http.StatusBadRequest,
+		ErrError:  BadRequest.Error(),
+		ErrCauses: causes,
+	}
+}
+
+// New Not Found Error
+func NewNotFoundError(causes interface{}) RestErr {
+	return RestError{
+		ErrStatus: http.StatusNotFound,
+		ErrError:  NotFound.Error(),
+		ErrCauses: causes,
+	}
+}
+
+// New Unauthorized Error
+func NewUnauthorizedError(causes interface{}) RestErr {
+	return RestError{
+		ErrStatus: http.StatusUnauthorized,
+		ErrError:  Unauthorized.Error(),
+		ErrCauses: causes,
+	}
 }
 
 // New Forbidden Error
@@ -117,7 +144,7 @@ func NewInternalServerError(causes interface{}) RestErr {
 	return result
 }
 
-// Parse of error string messages returns RestError
+// Parser of error string messages returns RestError
 func ParseErrors(err error) RestErr {
 	switch {
 	case errors.Is(err, sql.ErrNoRows):
@@ -166,6 +193,7 @@ func parseValidatorError(err error) RestErr {
 	return NewRestError(http.StatusBadRequest, BadRequest.Error(), err)
 }
 
+// Error response
 func ErrorResponse(err error) (int, interface{}) {
 	return ParseErrors(err).Status(), ParseErrors(err)
 }

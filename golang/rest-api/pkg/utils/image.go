@@ -6,7 +6,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
-	"rest-api/pkg/httperrors"
+	"rest-api/pkg/httpErrors"
 )
 
 var allowedImagesContentType = map[string]string{
@@ -18,7 +18,7 @@ var allowedImagesContentType = map[string]string{
 func determineFileContentType(fileHeader textproto.MIMEHeader) (string, error) {
 	contentTypes := fileHeader["Content-Type"]
 	if len(contentTypes) < 1 {
-		return "", httperrors.NotAllowedImageHeader
+		return "", httpErrors.NotAllowedImageHeader
 	}
 
 	return contentTypes[0], nil
@@ -27,24 +27,24 @@ func determineFileContentType(fileHeader textproto.MIMEHeader) (string, error) {
 func CheckImageContentType(image *multipart.FileHeader) error {
 	// check content type from header
 	if !IsAllowedImageHeader(image) {
-		return httperrors.NotAllowedImageHeader
+		return httpErrors.NotAllowedImageHeader
 	}
 
 	// check real content type
 	imageFile, err := image.Open()
 	if err != nil {
-		return httperrors.BadRequest
+		return httpErrors.BadRequest
 	}
 	// TODO maybe close will fail
 	defer imageFile.Close()
 
 	fileHeader := make([]byte, 512)
 	if _, err := imageFile.Read(fileHeader); err != nil {
-		return httperrors.BadRequest
+		return httpErrors.BadRequest
 	}
 
 	if !IsAllowedImageContentType(fileHeader) {
-		return httperrors.NotAllowedImageHeader
+		return httpErrors.NotAllowedImageHeader
 	}
 
 	return nil

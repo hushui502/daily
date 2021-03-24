@@ -16,27 +16,27 @@ import (
 )
 
 const (
-	basePrefix    = "api-auth:"
+	basePrefix = "api-auth:"
 	cacheDuration = 3600
 )
 
 // Auth UseCase
 type authUC struct {
-	cfg       *config.Config
-	authRepo  auth.Repository
+	cfg *config.Config
+	authRepo auth.Repository
 	redisRepo auth.RedisRepository
-	awsRepo   auth.AWSRepository
-	logger    logger.Logger
+	awsRepo auth.AWSRepository
+	logger logger.Logger
 }
 
 // Auth UseCase constructor
 func NewAuthUseCase(cfg *config.Config, authRepo auth.Repository, redisRepo auth.RedisRepository, awsRepo auth.AWSRepository, log logger.Logger) auth.UseCase {
 	return &authUC{
-		cfg:       cfg,
-		authRepo:  authRepo,
+		cfg: cfg,
+		authRepo: authRepo,
 		redisRepo: redisRepo,
-		awsRepo:   awsRepo,
-		logger:    log,
+		awsRepo: awsRepo,
+		logger: log,
 	}
 }
 
@@ -66,7 +66,7 @@ func (u *authUC) Register(ctx context.Context, user *models.User) (*models.UserW
 	}
 
 	return &models.UserWithToken{
-		User:  createUser,
+		User: createUser,
 		Token: token,
 	}, nil
 }
@@ -117,25 +117,25 @@ func (u *authUC) GetByID(ctx context.Context, userID uuid.UUID) (*models.User, e
 	span, ctx := opentracing.StartSpanFromContext(ctx, "authUC.GetByID")
 	defer span.Finish()
 
-	cachedUser, err := u.redisRepo.GetByIDCtx(ctx, u.GenerateUserKey(userID.String()))
+	cachedUser, err := u.redisRepo.GetByIDCtx(ctx, u.GenerateUserKey(userID.String())) 
 	if err != nil {
 		u.logger.Errorf("authUC.GetByID.GetByIDCtx: %v", err)
 	}
 	if cachedUser != nil {
 		return cachedUser, nil
 	}
-
+	
 	user, err := u.authRepo.GetByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-
+	
 	if err = u.redisRepo.SetUserCtx(ctx, u.GenerateUserKey(userID.String()), cacheDuration, user); err != nil {
 		u.logger.Errorf("authUC.GetByID.SetUserCtx: %v", err)
 	}
-
+	
 	user.SanitizePassword()
-
+	
 	return user, nil
 }
 
@@ -154,6 +154,7 @@ func (u *authUC) GetUsers(ctx context.Context, pg *utils.PaginationQuery) (*mode
 
 	return u.authRepo.GetUsers(ctx, pg)
 }
+
 
 // Login user, returns user model with jwt token
 func (u *authUC) Login(ctx context.Context, user *models.User) (*models.UserWithToken, error) {
@@ -177,7 +178,7 @@ func (u *authUC) Login(ctx context.Context, user *models.User) (*models.UserWith
 	}
 
 	return &models.UserWithToken{
-		User:  foundUser,
+		User: foundUser,
 		Token: token,
 	}, nil
 }

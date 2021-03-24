@@ -17,3 +17,5 @@ type Repository interface {
 	FindByEmail(ctx context.Context, user *models.User) (*models.User, error)
 	GetUsers(ctx context.Context, pq *utils.PaginationQuery) (*models.UsersList, error)
 }
+
+

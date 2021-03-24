@@ -24,3 +24,8 @@ func MakeToken(sid string, logger logger.Logger) string {
 
 	return token
 }
+
+func ValidateToken(token string, sid string, logger logger.Logger) bool {
+	 trueToken := MakeToken(sid, logger)
+	 return token == trueToken
+}

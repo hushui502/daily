@@ -2,7 +2,7 @@ package utils
 
 import (
 	"context"
-	"rest-api/pkg/httperrors"
+	"rest-api/pkg/httpErrors"
 	"rest-api/pkg/logger"
 )
 
@@ -19,7 +19,7 @@ func ValidateIsOwner(ctx context.Context, creatorID string, logger logger.Logger
 			creatorID,
 		)
 
-		return httperrors.Forbidden
+		return httpErrors.Forbidden
 	}
 
 	return nil

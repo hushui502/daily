@@ -3,14 +3,14 @@ package utils
 import (
 	"context"
 	"encoding/json"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"rest-api/config"
 	"rest-api/internal/models"
-	"rest-api/pkg/httperrors"
+	"rest-api/pkg/httpErrors"
 	"rest-api/pkg/logger"
 	"rest-api/pkg/sanitize"
 	"time"
@@ -90,7 +90,7 @@ type UserCtxKey struct{}
 func GetUserFromCtx(ctx context.Context) (*models.User, error) {
 	user, ok := ctx.Value(UserCtxKey{}).(*models.User)
 	if !ok {
-		return nil, httperrors.Unauthorized
+		return nil, httpErrors.Unauthorized
 	}
 
 	return user, nil
@@ -110,7 +110,7 @@ func ErrResponseWithLog(ctx echo.Context, logger logger.Logger, err error) error
 		err,
 	)
 
-	return ctx.JSON(httperrors.ErrorResponse(err))
+	return ctx.JSON(httpErrors.ErrorResponse(err))
 }
 
 // Error response with logging error for echo context
