@@ -61,5 +61,9 @@
 - [notify](https://github.com/hushui502/daily/tree/master/golang/notify): A simple Go lib for sending notifications to various messaging services.
 - [paxoskv](https://github.com/hushui502/daily/tree/master/golang/paxoskv): A simple K-V based on paxos.
 - [tinytcp](https://github.com/hushui502/daily/tree/master/golang/tinytcp): TCP implementation.
-- [concurrentmap](https://github.com/hushui502/daily/tree/master/golang/concurrentmap): A thread safe map
-- [code2img](https://github.com/hushui502/daily/tree/master/golang/code2img): code to img tool
+- [concurrentmap](https://github.com/hushui502/daily/tree/master/golang/concurrentmap): A thread safe map.
+- [code2img](https://github.com/hushui502/daily/tree/master/golang/code2img): code to img tool.
+- [rest-api](https://github.com/hushui502/daily/tree/master/golang/rest-api): Golang Clean Architecture REST API.
+- [uberlimit](https://github.com/hushui502/daily/tree/master/golang/uberlimit): unberlimiter.
+- [expirable-cache](https://github.com/hushui502/daily/tree/master/golang/expirable-cache): A thread-safe cache without goroutine.
+- [fatmaker](https://github.com/hushui502/daily/tree/master/golang/fatmaker): A tool for making fat exec binaries.
