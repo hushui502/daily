@@ -31,10 +31,6 @@ type Worker struct {
 	flag      bool           //用于测试时间回拨字段,正式环境不需要
 }
 
-// @desc 初始化一个节点
-// @auth liuguoqiang 2020-06-16
-// @param
-// @return
 func NewWorker(workerId int64) (*Worker, error) {
 	// 要先检测workerId是否在上面定义的范围内
 	if workerId < 0 || workerId > workerMax {
@@ -49,10 +45,6 @@ func NewWorker(workerId int64) (*Worker, error) {
 	}, nil
 }
 
-// @desc 获取id
-// @auth liuguoqiang 2020-06-16
-// @param
-// @return
 func (w *Worker) GetId() int64 {
 	//解决并发安全
 	w.mu.Lock()
@@ -102,10 +94,6 @@ func (w *Worker) GetId() int64 {
 	return id
 }
 
-// @desc 获取当前时间
-// @auth liuguoqiang 2020-06-16
-// @param
-// @return
 func (w *Worker) Now() int64 {
 	//模拟时间回拨10秒,正式环境不需要
 	if w.flag {
