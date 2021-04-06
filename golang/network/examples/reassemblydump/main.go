@@ -8,17 +8,11 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"github.com/google/gopacket"
-	"github.com/google/gopacket/ip4defrag"
-	"github.com/google/gopacket/layers"
-	"github.com/google/gopacket/pcap"
-	"github.com/google/gopacket/reassembly"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"network/examples/util"
 	"os"
 	"os/signal"
 	"path"
@@ -26,6 +20,13 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/examples/util"
+	"github.com/google/gopacket/ip4defrag"
+	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcap"
+	"github.com/google/gopacket/reassembly"
 )
 
 var (
@@ -485,7 +486,7 @@ func main() {
 
 	errorsMap := make(map[string]uint)
 	if *fname != "" {
-		if handle, err := pcap.OpenOffline(*fname); err != nil {
+		if handle, err = pcap.OpenOffline(*fname); err != nil {
 			log.Fatal("PCAP OpenOffline error:", err)
 		}
 	} else {
@@ -509,7 +510,7 @@ func main() {
 				log.Fatalf("Supported timestamp types: %v", inactive.SupportedTimestamps())
 			}
 		}
-		if handle, err := inactive.Activate(); err != nil {
+		if handle, err = inactive.Activate(); err != nil {
 			log.Fatal("PCAP Activate error:", err)
 		}
 		defer handle.Close()
@@ -600,7 +601,7 @@ func main() {
 			assembler.AssembleWithContext(packet.NetworkLayer().NetworkFlow(), tcp, &c)
 		}
 
-		if count%statsevery == 0 {
+		if count%*statsevery == 0 {
 			ref := packet.Metadata().CaptureInfo.Timestamp
 			flushed, closed := assembler.FlushWithOptions(reassembly.FlushOptions{T: ref.Add(-timeout), TC: ref.Add(-closeTimeout)})
 			Debug("Forced flush: %d flushed, %d closed (%s)", flushed, closed, ref)
