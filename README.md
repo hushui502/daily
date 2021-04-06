@@ -68,3 +68,4 @@ The order of the list is based on time, independent of the project.
 - [expirable-cache](https://github.com/hushui502/daily/tree/master/golang/expirable-cache): A thread-safe cache without goroutine.
 - [fatmaker](https://github.com/hushui502/daily/tree/master/golang/fatmaker): A tool for making fat exec binaries.
 - [bittorrent-client](https://github.com/hushui502/daily/tree/master/golang/bittorrent-client): A bittorrent client in Go.
+- [gopacket-tools](https://github.com/hushui502/daily/tree/master/golang/network/examples): Some simple capture-packet tools by gopacket.
