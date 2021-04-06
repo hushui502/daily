@@ -9,14 +9,21 @@ import (
 	"flag"
 	"fmt"
 	"github.com/google/gopacket"
+	"github.com/google/gopacket/ip4defrag"
 	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcap"
 	"github.com/google/gopacket/reassembly"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"network/examples/util"
 	"os"
+	"os/signal"
 	"path"
+	"runtime/pprof"
+	"strings"
 	"sync"
 	"time"
 )
@@ -461,4 +468,201 @@ func (t *tcpStream) ReassemblyComplete(ac reassembly.AssemblerContext) bool {
 	}
 	// don't remove connection for the last ACK
 	return false
+}
+
+func main() {
+	defer util.Run()()
+
+	var handle *pcap.Handle
+	var err error
+	if *debug {
+		outputLevel = 2
+	} else if *verbose {
+		outputLevel = 1
+	} else if *quiet {
+		outputLevel = -1
+	}
+
+	errorsMap := make(map[string]uint)
+	if *fname != "" {
+		if handle, err := pcap.OpenOffline(*fname); err != nil {
+			log.Fatal("PCAP OpenOffline error:", err)
+		}
+	} else {
+		inactive, err := pcap.NewInactiveHandle(*iface)
+		if err != nil {
+			log.Fatalf("could not create: %v", err)
+		}
+		defer inactive.CleanUp()
+
+		if err = inactive.SetSnapLen(*snaplen); err != nil {
+			log.Fatalf("could not set snap length: %v", err)
+		} else if err = inactive.SetPromisc(*promisc); err != nil {
+			log.Fatalf("could not set promisc mode: %v", err)
+		} else if err = inactive.SetTimeout(time.Second); err != nil {
+			log.Fatalf("could not set timeout: %v", err)
+		}
+		if *tstype != "" {
+			if t, err := pcap.TimestampSourceFromString(*tstype); err != nil {
+				log.Fatalf("Supported timestamp types: %v", inactive.SupportedTimestamps())
+			} else if err := inactive.SetTimestampSource(t); err != nil {
+				log.Fatalf("Supported timestamp types: %v", inactive.SupportedTimestamps())
+			}
+		}
+		if handle, err := inactive.Activate(); err != nil {
+			log.Fatal("PCAP Activate error:", err)
+		}
+		defer handle.Close()
+	}
+	if len(flag.Args()) > 0 {
+		bpffilter := strings.Join(flag.Args(), " ")
+		Info("Using BPF filter %q\n", bpffilter)
+		if err = handle.SetBPFFilter(bpffilter); err != nil {
+			log.Fatal("BPF filter error:", err)
+		}
+	}
+
+	var dec gopacket.Decoder
+	var ok bool
+	decoder_name := *decoder
+	if decoder_name == "" {
+		decoder_name = fmt.Sprintf("%s", handle.LinkType())
+	}
+	if dec, ok = gopacket.DecodersByLayerName[decoder_name]; !ok {
+		log.Fatalln("No decoder named", decoder_name)
+	}
+	source := gopacket.NewPacketSource(handle, dec)
+	source.Lazy = *lazy
+	source.NoCopy = true
+	Info("Starting to read packets\n")
+	count := 0
+	bytes := int64(0)
+	start := time.Now()
+	defrageger := ip4defrag.NewIPv4Defragmenter()
+
+	streamFactory := &tcpStreamFactory{doHTTP: !*nohttp}
+	streamPool := reassembly.NewStreamPool(streamFactory)
+	assembler := reassembly.NewAssembler(streamPool)
+
+	signlChan := make(chan os.Signal, 1)
+	signal.Notify(signlChan, os.Interrupt)
+
+	for packet := range source.Packets() {
+		count++
+		Debug("PACKET #%d\n", count)
+		data := packet.Data()
+		bytes += int64(len(data))
+		if *hexdumppkt {
+			Debug("Packet content (%d/0x%x)\n%s\n", len(data), len(data), hex.Dump(data))
+		}
+
+		// defrag the ipv4 packet if required ( maybe we dont need this for now
+		if !*nodefrag {
+			ipv4Layer := packet.Layer(layers.LayerTypeIPv4)
+			if ipv4Layer == nil {
+				continue
+			}
+			ip4 := ipv4Layer.(*layers.IPv4)
+			l := ip4.Length
+			newIp4, err := defrageger.DefragIPv4(ip4)
+			if err != nil {
+				log.Fatalln("Error while de-fragmenting", err)
+			} else if newIp4 == nil {
+				Debug("Fragment...\n")
+				// packet fragment, we don't have whole packet yet.
+				continue
+			}
+			if newIp4.Length != l {
+				stats.ipdefrag++
+				Debug("Decoding re-assembled packet: %s\n", newIp4.NextLayerType())
+				pb, ok := packet.(gopacket.PacketBuilder)
+				if !ok {
+					panic("Not a PacketBuilder")
+				}
+				nextDecoder := newIp4.NextLayerType()
+				nextDecoder.Decode(newIp4.Payload, pb)
+			}
+		}
+
+		tcp := packet.Layer(layers.LayerTypeTCP)
+		if tcp != nil {
+			tcp := tcp.(*layers.TCP)
+			if *checksum {
+				err := tcp.SetNetworkLayerForChecksum(packet.NetworkLayer())
+				if err != nil {
+					log.Fatalf("Failed to set network layer for checksum: %s\n", err)
+				}
+			}
+			c := Context{
+				CaptureInfo: packet.Metadata().CaptureInfo,
+			}
+			stats.totalsz += len(tcp.Payload)
+			assembler.AssembleWithContext(packet.NetworkLayer().NetworkFlow(), tcp, &c)
+		}
+
+		if count%statsevery == 0 {
+			ref := packet.Metadata().CaptureInfo.Timestamp
+			flushed, closed := assembler.FlushWithOptions(reassembly.FlushOptions{T: ref.Add(-timeout), TC: ref.Add(-closeTimeout)})
+			Debug("Forced flush: %d flushed, %d closed (%s)", flushed, closed, ref)
+		}
+
+		done := *maxcount > 0 && count >= *maxcount
+		if count%*statsevery == 0 || done {
+			errorsMapMutex.Lock()
+			errorMapLen := len(errorsMap)
+			errorsMapMutex.Unlock()
+			fmt.Fprintf(os.Stderr, "Processed %v packets (%v bytes) in %v (errors: %v, errTypes:%v)\n", count, bytes, time.Since(start), errors, errorMapLen)
+		}
+
+		select {
+		case <-signlChan:
+			fmt.Fprintf(os.Stderr, "\nCaught SIGINT: aborting\n")
+			done = true
+		default:
+		}
+
+		if done {
+			break
+		}
+	}
+	closed := assembler.FlushAll()
+	Debug("Final flush: %d closed", closed)
+	if outputLevel >= 2 {
+		streamPool.Dump()
+	}
+
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.WriteHeapProfile(f)
+		f.Close()
+	}
+
+	streamFactory.WaitGoroutines()
+	Debug("%s\n", assembler.Dump())
+
+	if !*nodefrag {
+		fmt.Printf("IPdefrag:\t\t%d\n", stats.ipdefrag)
+	}
+	fmt.Printf("TCP stats:\n")
+	fmt.Printf(" missed bytes:\t\t%d\n", stats.missedBytes)
+	fmt.Printf(" total packets:\t\t%d\n", stats.pkt)
+	fmt.Printf(" rejected FSM:\t\t%d\n", stats.rejectFsm)
+	fmt.Printf(" rejected Options:\t%d\n", stats.rejectOpt)
+	fmt.Printf(" reassembled bytes:\t%d\n", stats.sz)
+	fmt.Printf(" total TCP bytes:\t%d\n", stats.totalsz)
+	fmt.Printf(" conn rejected FSM:\t%d\n", stats.rejectConnFsm)
+	fmt.Printf(" reassembled chunks:\t%d\n", stats.reassembled)
+	fmt.Printf(" out-of-order packets:\t%d\n", stats.outOfOrderPackets)
+	fmt.Printf(" out-of-order bytes:\t%d\n", stats.outOfOrderBytes)
+	fmt.Printf(" biggest-chunk packets:\t%d\n", stats.biggestChunkPackets)
+	fmt.Printf(" biggest-chunk bytes:\t%d\n", stats.biggestChunkBytes)
+	fmt.Printf(" overlap packets:\t%d\n", stats.overlapPackets)
+	fmt.Printf(" overlap bytes:\t\t%d\n", stats.overlapBytes)
+	fmt.Printf("Errors: %d\n", errors)
+	for e, _ := range errorsMap {
+		fmt.Printf(" %s:\t\t%d\n", e, errorsMap[e])
+	}
 }
