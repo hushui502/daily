@@ -25,7 +25,7 @@ type scanner struct {
 	// opts and buf allow us to easily serialize packets in the address,
 	// using router to determine how to route pakets to that IP.
 	opts gopacket.SerializeOptions
-	buf gopacket.SerializeBuffer
+	buf  gopacket.SerializeBuffer
 }
 
 func newScanner(ip net.IP, router routing.Router) (*scanner, error) {
@@ -65,17 +65,17 @@ func (s *scanner) getHwAddr() (net.HardwareAddr, error) {
 	}
 	// prepare the layers to send for an ARP request
 	eth := layers.Ethernet{
-		SrcMAC: s.iface.HardwareAddr,
+		SrcMAC:       s.iface.HardwareAddr,
 		DstMAC:       net.HardwareAddr{0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
 		EthernetType: layers.EthernetTypeARP,
 	}
 	arp := layers.ARP{
-		AddrType:        layers.LinkTypeEthernet,
-		Protocol:        layers.EthernetTypeIPv4,
-		HwAddressSize:   6,
-		ProtAddressSize: 4,
-		Operation:       layers.ARPRequest,
-		SourceHwAddress: []byte(s.iface.HardwareAddr),
+		AddrType:          layers.LinkTypeEthernet,
+		Protocol:          layers.EthernetTypeIPv4,
+		HwAddressSize:     6,
+		ProtAddressSize:   4,
+		Operation:         layers.ARPRequest,
+		SourceHwAddress:   []byte(s.iface.HardwareAddr),
 		SourceProtAddress: []byte(s.src),
 		DstHwAddress:      []byte{0, 0, 0, 0, 0, 0},
 		DstProtAddress:    []byte(arpDst),
@@ -88,7 +88,7 @@ func (s *scanner) getHwAddr() (net.HardwareAddr, error) {
 
 	// wait 3 seconds for an ARP reply
 	for {
-		if time.Since(start) > time.Second * 3 {
+		if time.Since(start) > time.Second*3 {
 			return nil, errors.New("timeout getting ARP reply")
 		}
 		data, _, err := s.handle.ReadPacketData()
@@ -116,21 +116,21 @@ func (s *scanner) scan() error {
 	}
 	// construct all the network layers we need
 	eth := layers.Ethernet{
-		SrcMAC: s.iface.HardwareAddr,
-		DstMAC: hwaddr,
+		SrcMAC:       s.iface.HardwareAddr,
+		DstMAC:       hwaddr,
 		EthernetType: layers.EthernetTypeIPv4,
 	}
 	ip4 := layers.IPv4{
-		SrcIP:   s.src,
-		DstIP:   s.dst,
-		Version: 4,
-		TTL:     64,
+		SrcIP:    s.src,
+		DstIP:    s.dst,
+		Version:  4,
+		TTL:      64,
 		Protocol: layers.IPProtocolTCP,
 	}
 	tcp := layers.TCP{
 		SrcPort: 54321,
 		DstPort: 0,
-		SYN: true,
+		SYN:     true,
 	}
 	tcp.SetNetworkLayerForChecksum(&ip4)
 
@@ -149,7 +149,7 @@ func (s *scanner) scan() error {
 			}
 		}
 		// time out 5 seconds after the last packet we sent.
-		if time.Since(start) > time.Second * 5 {
+		if time.Since(start) > time.Second*5 {
 			log.Printf("timed out for %v, assuming we've seen all we can", s.dst)
 			return nil
 		}
@@ -196,7 +196,7 @@ func (s *scanner) send(l ...gopacket.SerializableLayer) error {
 }
 
 func main() {
-	defer util.Run()
+	defer util.Run()()
 	router, err := routing.New()
 	if err != nil {
 		log.Fatal("routing error:", err)
