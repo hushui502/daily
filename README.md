@@ -48,7 +48,6 @@ The order of the list is based on time, independent of the project.
 - [f2bs](https://github.com/hushui502/daily/tree/master/golang/f2bs): A file to byte slice tool.
 - [otp](https://github.com/hushui502/daily/tree/master/golang/otp): One Time Password utilities in Golang.
 - [ffpprof](https://github.com/hushui502/daily/tree/master/golang/ffpprof): ffpprof is a easy-to-setup pprof profile data collection library for development time. 
-- [go-sec](https://github.com/hushui502/daily/tree/master/golang/go-sec): Security in Go.
 - [pineaple](https://github.com/hushui502/daily/tree/master/golang/pineaple): Simple Programming Language Implementation.
 - [luago](https://github.com/hushui502/daily/tree/master/golang/luago): Lua programming language implementation in Golang.
 - [raft](https://github.com/hushui502/daily/tree/master/golang/raft):  Consensus algorithm-Raft in Go.  // TODO
@@ -66,6 +65,8 @@ The order of the list is based on time, independent of the project.
 - [rest-api](https://github.com/hushui502/daily/tree/master/golang/rest-api): Golang Clean Architecture REST API.
 - [uberlimit](https://github.com/hushui502/daily/tree/master/golang/uberlimit): unberlimiter.
 - [expirable-cache](https://github.com/hushui502/daily/tree/master/golang/expirable-cache): A thread-safe cache without goroutine.
-- [fatmaker](https://github.com/hushui502/daily/tree/master/golang/fatmaker): A tool for making fat exec binaries.
+- [go-sec](https://github.com/hushui502/daily/tree/master/golang/go-sec): Some security tools in Go.
 - [bittorrent-client](https://github.com/hushui502/daily/tree/master/golang/bittorrent-client): A bittorrent client in Go.
 - [gopacket-tools](https://github.com/hushui502/daily/tree/master/golang/network/examples): Some simple capture-packet tools by gopacket.
+
+
