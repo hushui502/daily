@@ -436,6 +436,83 @@ runtime.GOMAXPROCS(1) // 限制同时执行Go代码的操作系统线程数为 1
 
 默认是1-1的，如果cpu密集的，我们设置1-m（>1）则会造成一个问题，那就是线程切换过多，反而会降低性能。io的话设置大一点会增加吞吐率。
 ```
+- 如何实现select优先级
+```
+func work(ch1, ch2 <-chan int, stopCh chan struct{})  {
+    for {
+        select {
+        case <-stopCh:
+            return
+        case job1 := <-ch1:
+            println(job1)
+        case job2 := <-ch2:
+        priority:
+            for {
+                select {
+                case job1 := <-ch1:
+                    println(job1)
+                default:
+                    break priority
+                }
+            }
+            println(job2)
+        }
+    }
+}
+```
+有点类似单例模式的两次确认，具体做法就是利用default和label特性，这里要注意的是break没法直接跳出select。
+
+k8s cases
+```
+// kubernetes/pkg/controller/nodelifecycle/scheduler/taint_manager.go 
+func (tc *NoExecuteTaintManager) worker(worker int, done func(), stopCh <-chan struct{}) {
+    defer done()
+
+    // 当处理具体事件的时候，我们会希望 Node 的更新操作优先于 Pod 的更新
+    // 因为 NodeUpdates 与 NoExecuteTaintManager无关应该尽快处理
+    // -- 我们不希望用户(或系统)等到PodUpdate队列被耗尽后，才开始从受污染的Node中清除pod。
+    for {
+        select {
+        case <-stopCh:
+            return
+        case nodeUpdate := <-tc.nodeUpdateChannels[worker]:
+            tc.handleNodeUpdate(nodeUpdate)
+            tc.nodeUpdateQueue.Done(nodeUpdate)
+        case podUpdate := <-tc.podUpdateChannels[worker]:
+            // 如果我们发现了一个 Pod 需要更新，我么你需要先清空 Node 队列.
+        priority:
+            for {
+                select {
+                case nodeUpdate := <-tc.nodeUpdateChannels[worker]:
+                    tc.handleNodeUpdate(nodeUpdate)
+                    tc.nodeUpdateQueue.Done(nodeUpdate)
+                default:
+                    break priority
+                }
+            }
+            // 在 Node 队列清空后我们再处理 podUpdate.
+            tc.handlePodUpdate(podUpdate)
+            tc.podUpdateQueue.Done(podUpdate)
+        }
+    }
+}
+```
+
+NSQ cases
+```
+for msg := range c.incomingMsgChan {
+    select {
+    case c.memoryMsgChan <- msg:
+    default:
+        err := WriteMessageToBackend(&msgBuf, msg, c.backend)
+        if err != nil {
+            // ... handle errors ...
+        }
+    }
+}
+Taking advantage of Go’s select statement allows this functionality to be expressed in just a few lines of code: the default case above only executes if memoryMsgChan is full.
+```
+
 
 ## 小结
 什么时候，感觉脑子就像泉水一样，就算入门了。所以泉水是怎么生成的？
