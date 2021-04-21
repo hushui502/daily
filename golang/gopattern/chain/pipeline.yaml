@@ -1,0 +1,8 @@
+root: handler1_name
+steps:
+  handler1_name:
+    type: handlerImpl1
+    next: handler2_name
+
+  handler2_name:
+    type: handlerImpl2
