@@ -176,3 +176,209 @@ NAME     TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 kibana   NodePort   10.101.121.31   <none>        5601:30474/TCP   8m18s
 ```
 使用上面我们创建的 Secret 对象的 elastic 用户和生成的密码即可登录,到这里我们就安装成功了 ElasticSearch 与 Kibana，它们将为我们来存储和可视化我们的应用数据（监控指标、日志和追踪）服务。
+
+# 4. kube-state-metrics
+首先，我们需要安装 kube-state-metrics，这个组件是一个监听 Kubernetes API 的服务，可以暴露每个资源对象状态的相关指标数据。
+```
+$ git clone https://github.com/kubernetes/kube-state-metrics.git
+$ cd kube-state-metrics
+# 执行安装命令
+$ kubectl apply -f examples/standard/  
+clusterrolebinding.rbac.authorization.k8s.io/kube-state-metrics configured
+clusterrole.rbac.authorization.k8s.io/kube-state-metrics configured
+deployment.apps/kube-state-metrics configured
+serviceaccount/kube-state-metrics configured
+service/kube-state-metrics configured
+$ kubectl get pods -n kube-system -l app.kubernetes.io/name=kube-state-metrics
+NAME                                  READY   STATUS    RESTARTS   AGE
+kube-state-metrics-6d7449fc78-mgf4f   1/1     Running   0          88s
+```
+# 5. Metricbeat
+由于我们需要监控所有的节点，所以我们需要使用一个 DaemonSet 控制器来安装 Metricbeat。
+
+首先，使用一个 ConfigMap 来配置 Metricbeat，然后通过 Volume 将该对象挂载到容器中的 /etc/metricbeat.yaml 中去。配置文件中包含了 ElasticSearch 的地址、用户名和密码，以及 Kibana 配置，我们要启用的模块与抓取频率等信息。
+
+ElasticSearch 的 indice 生命周期表示一组规则，可以根据 indice 的大小或者时长应用到你的 indice 上。比如可以每天或者每次超过 1GB 大小的时候对 indice 进行轮转，我们也可以根据规则配置不同的阶段。由于监控会产生大量的数据，很有可能一天就超过几十G的数据，所以为了防止大量的数据存储，我们可以利用 indice 的生命周期来配置数据保留，这个在 Prometheus 中也有类似的操作。
+
+我们配置成每天或每次超过5GB的时候就对 indice 进行轮转，并删除所有超过10天的 indice 文件，我们这里只保留10天监控数据完全足够了。
+```
+metricbeat.indice-lifecycle.configmap.yml
+```
+
+接下来就可以来编写 Metricbeat 的 DaemonSet 资源对象清单
+```
+metricbeat.daemonset.yml
+```
+
+需要注意的将上面的两个 ConfigMap 挂载到容器中去，由于需要 Metricbeat 获取宿主机的相关信息，所以我们这里也挂载了一些宿主机的文件到容器中去，比如 proc 目录，cgroup 目录以及 dockersock 文件。
+
+由于 Metricbeat 需要去获取 Kubernetes 集群的资源对象信息，所以同样需要对应的 RBAC 权限声明，由于是全局作用域的，所以这里我们使用 ClusterRole 进行声明：
+```
+metricbeat.permissions.yml
+```
+
+```
+$ kubectl apply  -f metricbeat.settings.configmap.yml \
+                 -f metricbeat.indice-lifecycle.configmap.yml \
+                 -f metricbeat.daemonset.yml \
+                 -f metricbeat.permissions.yml
+
+configmap/metricbeat-config configured
+configmap/metricbeat-indice-lifecycle configured
+daemonset.extensions/metricbeat created
+clusterrolebinding.rbac.authorization.k8s.io/metricbeat created
+clusterrole.rbac.authorization.k8s.io/metricbeat created
+serviceaccount/metricbeat created
+
+$ kubectl get pods -n elastic -l app=metricbeat   
+NAME               READY   STATUS    RESTARTS   AGE
+metricbeat-2gstq   1/1     Running   0          18m
+metricbeat-99rdb   1/1     Running   0          18m
+metricbeat-9bb27   1/1     Running   0          18m
+metricbeat-cgbrg   1/1     Running   0          18m
+metricbeat-l2csd   1/1     Running   0          18m
+metricbeat-lsrgv   1/1     Running   0          18m
+```
+
+# 6. Filebeat
+## 安装配置 Filebeat
+安装配置 Filebeat来收集 Kubernetes 集群中的日志数据，然后发送到 ElasticSearch 去中，Filebeat 是一个轻量级的日志采集代理，还可以配置特定的模块来解析和可视化应用（比如数据库、Nginx 等）的日志格式。
+
+和 Metricbeat 类似，Filebeat 也需要一个配置文件来设置和 ElasticSearch 的链接信息、和 Kibana 的连接已经日志采集和解析的方式。
+我们配置采集 /var/log/containers/ 下面的所有日志数据，并且使用 inCluster 的模式访问 Kubernetes 的 APIServer，获取日志数据的 Meta 信息，将日志直接发送到 Elasticsearch。
+```
+filebeat.settings.configmap.yml
+```
+
+此外还通过 policy_file 定义了 indice 的回收策略：
+```
+filebeat.indice-lifecycle.configmap.yml
+```
+
+同样为了采集每个节点上的日志数据，我们这里使用一个 DaemonSet 控制器，使用上面的配置来采集节点的日志。
+```
+filebeat.daemonset.yml
+```
+我们这里使用的是 Kubeadm 搭建的集群，默认 Master 节点是有污点的，所以如果还想采集 Master 节点的日志，还必须加上对应的容忍，我这里不采集就没有添加容忍了。
+
+此外由于需要获取日志在 Kubernetes 集群中的 Meta 信息，比如 Pod 名称、所在的命名空间等，所以 Filebeat 需要访问 APIServer，自然就需要对应的 RBAC 权限了，所以还需要进行权限声明：
+```
+filebeat.permission.yml
+```
+
+```
+$ kubectl apply  -f filebeat.settings.configmap.yml \
+                 -f filebeat.indice-lifecycle.configmap.yml \
+                 -f filebeat.daemonset.yml \
+                 -f filebeat.permissions.yml 
+
+configmap/filebeat-config created
+configmap/filebeat-indice-lifecycle created
+daemonset.apps/filebeat created
+clusterrolebinding.rbac.authorization.k8s.io/filebeat created
+clusterrole.rbac.authorization.k8s.io/filebeat created
+serviceaccount/filebeat created
+```
+
+当所有的 Filebeat 和 Logstash 的 Pod 都变成 Running 状态后，证明部署完成。现在我们就可以进入到 Kibana 页面中去查看日志了。左侧菜单 Observability → Logs
+
+如果集群中要采集的日志数据量太大，直接将数据发送给 ElasticSearch，对 ES 压力比较大，这种情况一般可以加一个类似于 Kafka 这样的中间件来缓冲下，或者通过 Logstash 来收集 Filebeat 的日志。
+
+这里我们就完成了使用 Filebeat 采集 Kubernetes 集群的日志，在下篇文章中，我们继续学习如何使用 Elastic APM 来追踪 Kubernetes 集群应用。
+
+# 7. Elastic APM
+Elastic APM 是 Elastic Stack 上用于应用性能监控的工具，它允许我们通过收集传入请求、数据库查询、缓存调用等方式来实时监控应用性能。这可以让我们更加轻松快速定位性能问题。
+
+Elastic APM 是兼容 OpenTracing 的，所以我们可以使用大量现有的库来跟踪应用程序性能。
+
+比如我们可以在一个分布式环境（微服务架构）中跟踪一个请求，并轻松找到可能潜在的性能瓶颈。
+
+Elastic APM 通过一个名为 APM-Server 的组件提供服务，用于收集agent数据, 并向 ElasticSearch 发送追踪数据，再通过Kibana查看
+
+## 安装 APM-Server
+首先我们需要在 Kubernetes 集群上安装 APM-Server 来收集 agent 的追踪数据，并转发给 ElasticSearch，这里同样我们使用一个 ConfigMap 来配置：
+```
+apm.configmap.yml
+```
+APM-Server 需要暴露 8200 端口来让 agent 转发他们的追踪数据，新建一个对应的 Service 对象即可：
+```
+apm.service.yml
+```
+然后使用一个 Deployment 资源对象管理即可：
+```
+apm.deployment.yml
+```
+直接部署上面的几个资源对象：
+```
+$ kubectl apply  -f apm.deployment.yml \
+                 -f apm.service.yml \
+                 -f apm.deployment.yml
+
+configmap/apm-server-config created
+service/apm-server created
+deployment.extensions/apm-server created
+
+$ kubectl get pods -n elastic -l app=apm-server
+NAME                          READY   STATUS    RESTARTS   AGE
+apm-server-667bfc5cff-zj8nq   1/1     Running   0          12m
+```
+
+接下来我们可以在之前部署的 Spring-Boot 应用上安装一个 agent 应用。
+## 配置Java Agent
+接下来我们在示例应用程序 spring-boot-simple 上配置一个 Elastic APM Java agent。
+
+首先我们需要把 elastic-apm-agent-1.8.0.jar 这个 jar 包程序内置到应用容器中去，在构建镜像的 Dockerfile 文件中添加一行如下所示的命令直接下载该 JAR 包即可：
+```
+Dockerfile
+```
+然后需要在示例应用中添加上如下依赖关系，这样我们就可以集成 open-tracing 的依赖库或者使用 Elastic APM API 手动检测。
+```
+<dependency>
+    <groupId>co.elastic.apm</groupId>
+    <artifactId>apm-agent-api</artifactId>
+    <version>${elastic-apm.version}</version>
+</dependency>
+<dependency>
+    <groupId>co.elastic.apm</groupId>
+    <artifactId>apm-opentracing</artifactId>
+    <version>${elastic-apm.version}</version>
+</dependency>
+<dependency>
+    <groupId>io.opentracing.contrib</groupId>
+    <artifactId>opentracing-spring-cloud-mongo-starter</artifactId>
+    <version>${opentracing-spring-cloud.version}</version>
+</dependency>
+```
+修改之前的java Deployment 部署的 Spring-Boot 应用，需要开启 Java agent 并且要连接到 APM-Server。
+
+然后重新部署上面的示例应用：
+```
+$ kubectl apply -f spring-boot-simple.yml
+
+$ kubectl get pods -n elastic -l app=spring-boot-simple
+NAME                                 READY   STATUS    RESTARTS   AGE
+spring-boot-simple-fb5564885-tf68d   1/1     Running   0          5m11s
+
+$ kubectl get svc -n elastic -l app=spring-boot-simple
+NAME                 TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+spring-boot-simple   NodePort   10.109.55.134   <none>        8080:31847/TCP   9d
+```
+
+### get messages
+```
+$ curl -X GET http://********:31847/message
+```
+
+### get messages (慢请求)
+```
+$ curl -X GET http://******:31847/message?sleep=3000
+```
+### get messages (error)
+```
+curl -X GET http://******:31847/message?error=true
+```
+
+现在我们去到 Kibana 页面中路由到 APM 页面，我们应该就可以看到 spring-boot-simple 应用的数据了。
+
+# 小结
+到这里我们就完成了使用 Elastic Stack 进行 Kubernetes 环境的全栈监控，通过监控指标、日志、性能追踪来了解我们的应用各方面运行情况，加快我们排查和解决各种问题。

@@ -1,19 +1,4 @@
-# spring-boot-simple.yml
----
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: elastic
-  name: spring-boot-simple
-  labels:
-    app: spring-boot-simple
-spec:
-  type: NodePort
-  ports:
-  - port: 8080
-    protocol: TCP
-  selector:
-    app: spring-boot-simple
+# spring-boot-simple.deployment.yml
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -23,7 +8,6 @@ metadata:
   labels:
     app: spring-boot-simple
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: spring-boot-simple
@@ -34,9 +18,23 @@ spec:
     spec:
       containers:
       - image: cnych/spring-boot-simple:0.0.1-SNAPSHOT
+        imagePullPolicy: Always
         name: spring-boot-simple
+        command:
+          - "java"
+          - "-javaagent:/apm-agent.jar"
+          - "-Delastic.apm.active=$(ELASTIC_APM_ACTIVE)"
+          - "-Delastic.apm.server_urls=$(ELASTIC_APM_SERVER)"
+          - "-Delastic.apm.service_name=spring-boot-simple"
+          - "-jar"
+          - "app.jar"
         env:
-        - name: SPRING_DATA_MONGODB_HOST  # 指定MONGODB地址
-          value: mongo
+          - name: SPRING_DATA_MONGODB_HOST
+            value: mongo
+          - name: ELASTIC_APM_ACTIVE
+            value: "true"
+          - name: ELASTIC_APM_SERVER
+            value: http://apm-server.elastic.svc.cluster.local:8200
         ports:
         - containerPort: 8080
+---
