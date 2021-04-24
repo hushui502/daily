@@ -1,0 +1,42 @@
+# spring-boot-simple.yml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: elastic
+  name: spring-boot-simple
+  labels:
+    app: spring-boot-simple
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+    app: spring-boot-simple
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: elastic
+  name: spring-boot-simple
+  labels:
+    app: spring-boot-simple
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-boot-simple
+  template:
+    metadata:
+      labels:
+        app: spring-boot-simple
+    spec:
+      containers:
+      - image: cnych/spring-boot-simple:0.0.1-SNAPSHOT
+        name: spring-boot-simple
+        env:
+        - name: SPRING_DATA_MONGODB_HOST  # 指定MONGODB地址
+          value: mongo
+        ports:
+        - containerPort: 8080
