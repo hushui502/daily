@@ -153,3 +153,26 @@ secret/elasticsearch-pw-elastic created
 ```
 
 # 3. Kibana
+ElasticSearch 集群安装完成后，接着我们可以来部署 Kibana，这是 ElasticSearch 的数据可视化工具，它提供了管理 ElasticSearch 集群和可视化数据的各种功能。
+
+```
+$ kubectl apply  -f kibana.configmap.yaml \
+                 -f kibana.service.yaml \
+                 -f kibana.deployment.yaml
+
+configmap/kibana-config created
+service/kibana created
+deployment.apps/kibana created
+
+$ kubectl logs -f -n elastic $(kubectl get pods -n elastic | grep kibana | sed -n 1p | awk '{print $1}') \
+     | grep "Status changed from yellow to green"
+
+{"type":"log","@timestamp":"2020-06-26T04:20:38Z","tags":["status","plugin:elasticsearch@7.8.0","info"],"pid":6,"state":"green","message":"Status changed from yellow to green - Ready","prevState":"yellow","prevMsg":"Waiting for Elasticsearch"}
+```
+当状态变成 green 后，我们就可以通过 NodePort 端口 30474 去浏览器中访问 Kibana 服务了
+```
+$ kubectl get svc kibana -n elastic   
+NAME     TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kibana   NodePort   10.101.121.31   <none>        5601:30474/TCP   8m18s
+```
+使用上面我们创建的 Secret 对象的 elastic 用户和生成的密码即可登录,到这里我们就安装成功了 ElasticSearch 与 Kibana，它们将为我们来存储和可视化我们的应用数据（监控指标、日志和追踪）服务。
