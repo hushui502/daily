@@ -1,4 +1,3 @@
-The order of the list is based on time, independent of the project.
 ---
 - [data structure](https://github.com/hushui502/daily/tree/master/golang/algo): Some data structures and algorithms implemented in golang.
 - [goroutine pool](https://github.com/hushui502/daily/tree/master/golang/ants): A goroutine pool with fixed capacity, managing and recycling a massive number of goroutines.
