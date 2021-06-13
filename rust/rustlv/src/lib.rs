@@ -418,7 +418,7 @@ mod first_cut {
         assert_eq!(x * y, Complex { re: 0, im: 29 });
     }
 
-    impl<T: Eq> Eq for Complex<T> {}
+    // impl<T: Eq> Eq for Complex<T> {}
 }
 
 mod non_generic_add {
