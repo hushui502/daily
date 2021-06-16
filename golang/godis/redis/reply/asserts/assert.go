@@ -1,6 +1,7 @@
 package asserts
 
 import (
+	"fmt"
 	"godis/interface/redis"
 	"godis/lib/utils"
 	"godis/redis/reply"
