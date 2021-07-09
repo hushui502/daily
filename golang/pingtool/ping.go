@@ -1,0 +1,161 @@
+// https://github.com/chenjiandongx/pinger
+package pingtool
+
+import (
+	"context"
+	"net"
+	"strings"
+	"sync"
+	"time"
+)
+
+var (
+	defaultStatsBuf = 60
+	zeroDur = time.Duration(0)
+)
+
+// PingStat is used to record the ping result
+type PingStat struct {
+	Host string
+	PktSent int
+	PktLossRate float64
+	Mean time.Duration
+	Last time.Duration
+	Best time.Duration
+	Worst time.Duration
+}
+
+type destination struct {
+	host   string
+	remote *net.IPAddr
+	fail   int
+	*history
+}
+
+type history struct {
+	received int
+	lost int
+	results []time.Duration
+	mtx sync.RWMutex
+}
+
+func (h *history) addResult(rtt time.Duration, err error) {
+	h.mtx.Lock()
+	if err != nil {
+		h.lost++
+	} else {
+		h.results[h.received%len(h.results)] = rtt
+		h.received++
+	}
+	h.mtx.Unlock()
+}
+
+func (h *history) compute() (st PingStat) {
+	h.mtx.RLock()
+	defer h.mtx.RUnlock()
+
+	if h.received == 0 && h.lost > 0 {
+		st.PktLossRate = 1.0
+		return
+	}
+
+	collection := h.results[:]
+	st.PktSent = h.received + h.lost
+	size := len(h.results)
+	st.Last = collection[(h.received-1)%size]
+
+	if h.received <= size {
+		collection = h.results[:h.received]
+		size = h.received
+	}
+
+	st.PktLossRate = float64(h.lost) / float64(h.received+h.lost)
+	st.Best, st.Worst = collection[0], collection[0]
+
+	total := time.Duration(0)
+	for _, rtt := range collection {
+		if rtt < st.Best {
+			st.Best = rtt
+		}
+		if rtt > st.Worst {
+			st.Worst = rtt
+		}
+		total += rtt
+	}
+
+	st.Mean = time.Duration(float64(total) / float64(size))
+	return
+}
+
+func resolve(addr string, timeout time.Duration) ([]net.IPAddr, error) {
+	if strings.ContainsRune(addr, '%') {
+		ipaddr, err := net.ResolveIPAddr("ip", addr)
+		if err != nil {
+			return nil, err
+		}
+		return []net.IPAddr{*ipaddr}, nil
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	return net.DefaultResolver.LookupIPAddr(ctx, addr)
+}
+
+func sortHosts(stats map[string]PingStat, hosts ...string) []PingStat {
+	ordered := make([]PingStat, len(hosts))
+	for i, host := range hosts {
+		ordered[i] = stats[host]
+	}
+	return ordered
+}
+
+type calcStatsReq struct {
+	maxConcurrency int
+	failover       int
+	pingCount      int
+	dest           []*destination
+	ping           func(d *destination, args ...interface{}) error
+	setInterval    func() time.Duration
+	args           interface{}
+}
+
+// calculateStats calculates per destination result
+func calculateStats(csr calcStatsReq) map[string]PingStat {
+	stats := make(map[string]PingStat)
+
+	mux := sync.Mutex{}
+	wg := sync.WaitGroup{}
+	sema := make(chan struct{}, csr.maxConcurrency)
+
+	for _, dest := range csr.dest {
+		wg.Add(1)
+		go func(d *destination) {
+			defer wg.Done()
+
+			for c := 0; c < csr.pingCount; c++ {
+				sema <- struct{}{}
+
+				if err := csr.ping(d, csr.args); err != nil {
+					d.fail++
+				}
+
+				mux.Lock()
+				stat := d.compute()
+				stat.Host = d.host
+				stats[d.host] = stat
+				mux.Unlock()
+
+				<-sema
+
+				if d.fail >= csr.failover {
+					return
+				}
+				time.Sleep(csr.setInterval())
+			}
+		}(dest)
+	}
+	wg.Wait()
+
+	return stats
+}
