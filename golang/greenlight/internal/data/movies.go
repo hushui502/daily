@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/lib/pq"
 	"greenlight/internal/validator"
@@ -68,41 +69,114 @@ type MovieModel struct {
 
 // Insert method for inserting a new record in the movies table.
 func (m MovieModel) Insert(movie *Movie) error {
-	// Define the SQL query for inserting a new record in the movies table and returning
-	// the system-generated data.
 	query := `
-		INSERT INTO movies (title, year, runtime, genres)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id, created_at, version
-	`
+INSERT INTO movies (title, year, runtime, genres)
+VALUES ($1, $2, $3, $4)
+RETURNING id, created_at, version`
 
-	// Create an args slice containing the values for the placeholder parameters from
-	// the movie struct. Declaring this slice immediately next to our SQL query helps to
-	// make it nice and clear *what values are being used where* in the query.
 	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
 
-	// Create a context with a 3-second timeout.
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	// Use the QueryRowContext() method to execute the SQL query on our connection pool,
-	// passing in the args slice as a variadic parameter and scanning the system-generated
-	// id, created_at and version values into the movie struct.
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
 }
 
 // Add a placeholder method for fetching a specific record from the movies table.
 func (m MovieModel) Get(id int64) (*Movie, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	// Remove the pg_sleep(10) clause.
+	query := `
+SELECT id, created_at, title, year, runtime, genres, version
+FROM movies
+WHERE id = $1`
+
+	var movie Movie
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	// Remove &[]byte{} from the first Scan() destination.
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+		&movie.ID,
+		&movie.CreatedAt,
+		&movie.Title,
+		&movie.Year,
+		&movie.Runtime,
+		pq.Array(&movie.Genres),
+		&movie.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &movie, nil
 }
 
 // Add a placeholder method for updating a specific record in the movies table.
 func (m MovieModel) Update(movie *Movie) error {
+	query := `
+UPDATE movies
+SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1
+WHERE id = $5 AND version = $6
+RETURNING version`
+	args := []interface{}{
+		movie.Title,
+		movie.Year,
+		movie.Runtime,
+		pq.Array(movie.Genres),
+		movie.ID,
+		movie.Version,
+	}
+	// Create a context with a 3-second timeout.
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	// Use QueryRowContext() and pass the context as the first argument.// Use QueryRowContext() and pass the context as the first argument.
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&movie.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
 	return nil
 }
 
-// Add a placeholder method for deleting a specific record from the movies table.
 func (m MovieModel) Delete(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
+
+	query := `
+DELETE FROM movies
+WHERE id = $1`
+
+	// Create a context with a 3-second timeout.
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	// Use ExecContext() and pass the context as the first argument.
+	result, err := m.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+
 	return nil
 }
 
@@ -114,7 +188,6 @@ func (m MockMovieModel) Insert(movie *Movie) error {
 }
 
 func (m MockMovieModel) Get(id int64) (*Movie, error) {
-	// Mock the action...
 	return nil, nil
 }
 
