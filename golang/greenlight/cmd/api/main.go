@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"fmt"
 	"greenlight/internal/data"
-	"log"
-	"net/http"
+	"greenlight/internal/jsonlog"
+	"greenlight/internal/mailer"
 	"os"
+	"sync"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -30,33 +30,65 @@ type config struct {
 		maxIdleConns int
 		maxIdleTime  string
 	}
+
+	limiter struct {
+		rps     float64
+		burst   int
+		enabled bool
+	}
+
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 }
 
 type application struct {
+	// server
 	config config
-	logger *log.Logger
-
+	// log
+	logger *jsonlog.Logger
+	// database
 	models data.Models
+	// mail
+	mailer mailer.Mailer
+	wg     sync.WaitGroup
 }
 
 var (
 	cfg    config
-	logger *log.Logger
+	logger *jsonlog.Logger
 )
 
 func init() {
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 
-	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:123456@localhost/greenlight", "PostgreSQL DSN")
-	//flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
+	// database config
+	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
 
+	// limiter config
+	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
+	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
+	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
+
 	// Initialize a new logger which writes messages to the standard out stream,
 	// prefixed with the current date and time.
-	logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	logger = jsonlog.New(os.Stdout, jsonlog.LevelInfo)
+
+	// Read the SMTP server configuration settings into the config struct
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "0abf276416b183", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "d8672aa2264bb5", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@greenlight.alexedwards.net>", "SMTP sender")
+
 }
 
 func main() {
@@ -64,7 +96,7 @@ func main() {
 
 	db, err := openDB(cfg)
 	if err != nil {
-		logger.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 
 	// Defer a call to db.Close() so that the connection pool is closed before the
@@ -73,36 +105,22 @@ func main() {
 
 	// Also log a message to say that the connection pool has been successfully
 	// established.
-	logger.Printf("database connection pool established")
+	logger.PrintInfo("database connection pool established", nil)
 
 	app := &application{
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
+		mailer: mailer.New(cfg.smtp.host,
+			cfg.smtp.port,
+			cfg.smtp.username,
+			cfg.smtp.password,
+			cfg.smtp.sender),
 	}
 
-	// Declare a new servemux and add a /v1/healthcheck route which dispatches requests
-	// to the healthcheckHandler method (which we will create in a moment).
-	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/healthcheck", app.healthcheckHandler)
-
-	// Declare a HTTP server with some sensible timeout settings, which listens on the
-	// port provided in the config struct and uses the servemux we created above as the
-	// handler.
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      app.routes(),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+	if err := app.serve(); err != nil {
+		logger.PrintFatal(err, nil)
 	}
-
-	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
-	if err := srv.ListenAndServe(); err != nil {
-		logger.Fatal(err)
-		os.Exit(-1)
-	}
-
 }
 
 // The openDB() function returns a sql.DB connection pool.
