@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"expvar"
 	"flag"
+	"fmt"
 	"greenlight/internal/data"
 	"greenlight/internal/jsonlog"
 	"greenlight/internal/mailer"
@@ -17,10 +18,16 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Declare a string containing the application version number. Later in the book we'll
-// generate this automatically at build time, but for now we'll just store the version
-// number as a hard-coded global constant.
-const version = "1.0.0"
+var (
+	displayVersion *bool
+
+	// Create a buildTime variable to hold the executable binary build time. Note that this
+	// must be a string type, as the -X linker flag will only work with string variables.
+	buildTime string
+
+	// Declare a string containing . Later in the book we
+	version string
+)
 
 // Define a config struct to hold all the configuration settings for our application.
 type config struct {
@@ -51,6 +58,11 @@ type config struct {
 	cors struct {
 		trustedOrigins []string
 	}
+
+	jwt struct {
+		// Add a new field to store the JWT signing secret.
+		secret string
+	}
 }
 
 type application struct {
@@ -75,8 +87,9 @@ func init() {
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
 
 	// database config
-	flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:123456@localhost/greenlight", "PostgreSQL DSN")
-	//flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
+	// flag.StringVar(&cfg.db.dsn, "db-dsn", "postgres://greenlight:123456@localhost/greenlight", "PostgreSQL DSN")
+	// flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", "", "PostgreSQL DSN")
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
@@ -101,10 +114,27 @@ func init() {
 		cfg.cors.trustedOrigins = strings.Fields(val)
 		return nil
 	})
+
+	// Parse the JWT signing secret from the command-line-flag. Notice that we leave the
+	// default value as the empty string if no flag is provided.
+	flag.StringVar(&cfg.jwt.secret, "jwt-secret", "", "JWT secret")
+
+	// Create a new version boolean flag with the default value of false.
+	displayVersion = flag.Bool("version", false, "Display version and exit")
 }
 
 func main() {
 	flag.Parse()
+
+	// If the version flag value is true, then print out the version number and
+	// immediately exit.
+	if *displayVersion {
+		fmt.Printf("Version:\t%s\n", version)
+		// Print out the contents of the buildTime variable.
+		fmt.Printf("Build time:\t%s\n", buildTime)
+
+		os.Exit(0)
+	}
 
 	db, err := openDB(cfg)
 	if err != nil {

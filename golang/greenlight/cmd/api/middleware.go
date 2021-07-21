@@ -5,10 +5,10 @@ import (
 	"expvar"
 	"fmt"
 	"github.com/felixge/httpsnoop"
+	"github.com/pascaldekloe/jwt"
+	"github.com/tomasen/realip"
 	"golang.org/x/time/rate" // New import
 	"greenlight/internal/data"
-	"greenlight/internal/validator"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -62,23 +62,23 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if app.config.limiter.enabled {
-			ip, _, err := net.SplitHostPort(r.RemoteAddr)
-			if err != nil {
-				app.serverErrorResponse(w, r, err)
-				return
-			}
+			ip := realip.FromRequest(r)
+
 			mu.Lock()
 			if _, found := clients[ip]; !found {
 				// Create and add a new client struct to the map if it doesn't already exist.
 				clients[ip] = &client{limiter: rate.NewLimiter(2, 4)}
 			}
+
 			// Update the last seen time for the client.
 			clients[ip].lastSeen = time.Now()
+
 			if !clients[ip].limiter.Allow() {
 				mu.Unlock()
 				app.rateLimitExceededResponse(w, r)
 				return
 			}
+
 			mu.Unlock()
 		}
 
@@ -117,22 +117,45 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			app.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
+
 		// Extract the actual authentication token from the header parts.
 		token := headerParts[1]
-		// Validate the token to make sure it is in a sensible format.
-		v := validator.New()
-		// If the token isn't valid, use the invalidAuthenticationTokenResponse()
-		// helper to send a response, rather than the failedValidationResponse() helper
-		// that we'd normally use.
-		if data.ValidateTokenPlaintext(v, token); !v.Valid() {
+
+		// Parse the JWT and extract the claims. This will return an error if the JWT
+		// contents doesn't match the signature (i.e. the token has been tampered with)
+		// or the algorithm isn't valid.
+		claims, err := jwt.HMACCheck([]byte(token), []byte(app.config.jwt.secret))
+		if err != nil {
 			app.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
-		// Retrieve the details of the user associated with the authentication token,
-		// again calling the invalidAuthenticationTokenResponse() helper if no
-		// matching record was found. IMPORTANT: Notice that we are using
-		// ScopeAuthentication as the first parameter here.
-		user, err := app.models.Users.GetForToken(data.ScopeAuthentication, token)
+
+		// Check if the JWT is still valid at this moment in time.
+		if !claims.Valid(time.Now()) {
+			app.invalidAuthenticationTokenResponse(w, r)
+			return
+		}
+		// Check that the issuer is our application.
+		if claims.Issuer != "greenlight.alexedwards.net" {
+			app.invalidAuthenticationTokenResponse(w, r)
+			return
+		}
+		// Check that our application is in the expected audiences for the JWT.
+		if !claims.AcceptAudience("greenlight.alexedwards.net") {
+			app.invalidAuthenticationTokenResponse(w, r)
+			return
+		}
+		// At this point, we know that the JWT is all OK and we can trust the data in
+		// it. We extract the user ID from the claims subject and convert it from a
+		// string into an int64.
+		userID, err := strconv.ParseInt(claims.Subject, 10, 64)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+
+		// Lookup the user record from the database.
+		user, err := app.models.Users.Get(userID)
 		if err != nil {
 			switch {
 			case errors.Is(err, data.ErrRecordNotFound):
@@ -143,8 +166,8 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			return
 		}
 
+		// Add the user record to the request context and continue as normal.
 		r = app.contextSetUser(r, user)
-
 		next.ServeHTTP(w, r)
 	})
 }
