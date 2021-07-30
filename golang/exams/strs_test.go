@@ -1,6 +1,7 @@
 package main
 
 import (
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -192,6 +193,145 @@ func Test_replaceBlank(t *testing.T) {
 			}
 			if got1 != tt.want1 {
 				t.Errorf("replaceBlank() got1 = %v, want %v", got1, tt.want1)
+			}
+		})
+	}
+}
+
+func Test_firstUniqueChar(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "str1",
+			args: args{s: "leetcode"},
+			want: 0,
+		},
+		{
+			name: "str2",
+			args: args{s: "loveleetcode"},
+			want: 2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := firstUniqueChar(tt.args.s); got != tt.want {
+				t.Errorf("firstUniqueChar() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_isPalindrome(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "str1",
+			args: args{s: "abcba"},
+			want: true,
+		},
+		{
+			name: "str2",
+			args: args{s: "abb"},
+			want: false,
+		},
+		{
+			name: "str3",
+			args: args{s: "ab1ba"},
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isPalindrome(tt.args.s); got != tt.want {
+				t.Errorf("isPalindrome() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_maxSlideWindow(t *testing.T) {
+	type args struct {
+		nums []int
+		k    int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{
+			name: "win1",
+			args: args{
+				nums: []int{1, 3, -1, -3, 5, 3, 6, 7},
+				k:    3,
+			},
+			want: []int{3, 3, 5, 5, 6, 7},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := maxSlideWindow(tt.args.nums, tt.args.k); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("maxSlideWindow() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_bubbleSort(t *testing.T) {
+	type args struct {
+		arr []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{
+			name: "sort1",
+			args: args{arr: []int{3, 1, 2, 4, 6}},
+			want: []int{6, 4, 3, 2, 1},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := bubbleSort(tt.args.arr); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("bubbleSort() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_selectSort(t *testing.T) {
+	type args struct {
+		arr []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{
+			name: "sort1",
+			args: args{arr: []int{3, 1, 2, 4, 6}},
+			want: []int{1, 2, 3, 4, 6},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := selectSort(tt.args.arr); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("selectSort() = %v, want %v", got, tt.want)
 			}
 		})
 	}

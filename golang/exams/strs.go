@@ -189,3 +189,125 @@ func replaceBlank(s string) (string, bool) {
 
 	return strings.Replace(s, " ", "%20", -1), true
 }
+
+func reverseString2(s string) string {
+	runes := []rune(s)
+
+	for i := 0; i < len(runes)/2; i++ {
+		runes[i], runes[len(runes)-i-1] = runes[len(runes)-i-1], runes[i]
+	}
+
+	return string(runes)
+}
+/*
+给定⼀个字符串，找到它的第⼀个不重复的字符，并返回它的索引。如果不存在，则返
+回 -1 。 案例:
+s = "leetcode" 返回 0.
+s = "loveleetcode", 返回 2
+*/
+func firstUniqueChar(s string) int {
+	var arr [26]int
+
+	for i, k := range s {
+		arr[k-'a'] = i
+	}
+
+	for i, k := range s {
+		if arr[k-'a'] == i {
+			return i
+		}
+	}
+
+	return -1
+}
+
+func isPalindrome(s string) bool {
+	if s == "" {
+		return false
+	}
+	s = strings.ToLower(s)
+
+	if len(s) == 2 {
+		return s[0] == s[1]
+	}
+
+	left, right := 0, len(s)-1
+
+	for left < right {
+		if !(s[left] >= 'a' && s[left] <= 'z') || (s[left] >= '0' && s[left] <= '9') {
+			left++
+			continue
+		}
+		if !(s[right] >= 'a' && s[right] <= 'z') || (s[right] >= '0' && s[right] <= '9') {
+			right--
+			continue
+		}
+		if s[left] != s[right] {
+			return false
+		}
+
+		left++
+		right--
+	}
+
+	return true
+}
+
+func maxSlideWindow(nums []int, k int) []int {
+	len := len(nums)
+	res := make([]int, 0)
+	index := 0
+
+	for index < len {
+		maxNum := nums[index]
+
+		if index > len-k {
+			break
+		}
+
+		for i := index+1; i < index+k; i++ {
+			if nums[i] > maxNum {
+				maxNum = nums[i]
+			}
+		}
+
+		res = append(res, maxNum)
+		index++
+	}
+
+	return res
+}
+
+func bubbleSort(arr []int) []int {
+	if len(arr) == 0 {
+		return []int{}
+	}
+
+	for i := 0; i < len(arr); i++ {
+		for j := 0; j < len(arr); j++ {
+			if arr[i] > arr[j] {
+				arr[i], arr[j] = arr[j], arr[i]
+			}
+		}
+	}
+
+	return arr
+}
+
+func selectSort(arr []int) []int {
+	l := len(arr)
+	if l == 0 {
+		return arr
+	}
+	for i := 0; i < l; i++ {
+		min := i
+		for j := i + 1; j < l; j++ {
+			if arr[j] < arr[min] {
+				min = j
+			}
+		}
+		arr[i], arr[min] = arr[min], arr[i]
+	}
+
+	return arr
+}
