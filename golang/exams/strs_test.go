@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-
 func Test_isUniqueString(t *testing.T) {
 	type args struct {
 		s string
@@ -28,7 +27,7 @@ func Test_isUniqueString(t *testing.T) {
 			want: false,
 		},
 	}
-		for _, tt := range tests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := isUniqueString(tt.args.s); got != tt.want {
 				t.Errorf("isUniqueString() = %v, want %v", got, tt.want)
@@ -95,21 +94,21 @@ func Test_reverseString(t *testing.T) {
 		want1 bool
 	}{
 		{
-			name: "str1",
-			args: args{s: "abcd"},
-			want: "dcba",
+			name:  "str1",
+			args:  args{s: "abcd"},
+			want:  "dcba",
 			want1: true,
 		},
 		{
-			name: "str2",
-			args: args{s: "qwer"},
-			want: "rewq",
+			name:  "str2",
+			args:  args{s: "qwer"},
+			want:  "rewq",
 			want1: true,
 		},
 		{
-			name: "str3",
-			args: args{s: strings.Repeat("abcde", 10000)},
-			want: strings.Repeat("abcde", 10000),
+			name:  "str3",
+			args:  args{s: strings.Repeat("abcde", 10000)},
+			want:  strings.Repeat("abcde", 10000),
 			want1: false,
 		},
 	}
@@ -173,15 +172,15 @@ func Test_replaceBlank(t *testing.T) {
 		want1 bool
 	}{
 		{
-			name: "str1",
-			args: args{s: "ab c"},
-			want: "ab%20c",
+			name:  "str1",
+			args:  args{s: "ab c"},
+			want:  "ab%20c",
 			want1: true,
 		},
 		{
-			name: "str2",
-			args: args{s: "ab23c"},
-			want: "ab23c",
+			name:  "str2",
+			args:  args{s: "ab23c"},
+			want:  "ab23c",
 			want1: false,
 		},
 	}

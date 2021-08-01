@@ -56,7 +56,7 @@ func printA(number, letter chan bool, wg *sync.WaitGroup) {
 				}
 				fmt.Print(string(str[i]))
 				i++
-				number <-true
+				number <- true
 			default:
 			}
 		}
@@ -156,7 +156,7 @@ func isRegroup(s1, s2 string) bool {
 	sl1 := len([]rune(s1))
 	sl2 := len([]rune(s2))
 
-	if sl1 > 5000 || sl2 > 5000 || sl1 != sl2{
+	if sl1 > 5000 || sl2 > 5000 || sl1 != sl2 {
 		return false
 	}
 
@@ -199,6 +199,7 @@ func reverseString2(s string) string {
 
 	return string(runes)
 }
+
 /*
 给定⼀个字符串，找到它的第⼀个不重复的字符，并返回它的索引。如果不存在，则返
 回 -1 。 案例:
@@ -265,7 +266,7 @@ func maxSlideWindow(nums []int, k int) []int {
 			break
 		}
 
-		for i := index+1; i < index+k; i++ {
+		for i := index + 1; i < index+k; i++ {
 			if nums[i] > maxNum {
 				maxNum = nums[i]
 			}
