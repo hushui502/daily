@@ -376,3 +376,153 @@ func mergeTwoLists2(l1, l2 *ListNode) *ListNode {
 
 	return dummy.Next
 }
+
+func mergeKListNodes(list []*ListNode) *ListNode {
+	len := len(list)
+	if len == 0 {
+		return nil
+	}
+	if len == 1 {
+		return list[0]
+	}
+
+	left := mergeKListNodes(list[:len/2])
+	right := mergeKListNodes(list[len/2:])
+
+	root := mergeTwoLists(left, right)
+
+	return root
+}
+
+func generateParenthesis(n int) []string {
+	var res []string
+	if n == 0 {
+		return []string{}
+	}
+
+	findParenthesis(n, n, "", &res)
+
+	return res
+}
+
+func findParenthesis(lindex, rindex int, str string, res *[]string) {
+	if lindex == 0 && rindex == 0 {
+		*res = append(*res, str)
+		return
+	}
+
+	if lindex > 0 {
+		findParenthesis(lindex-1, rindex, str+"(", res)
+	}
+	if lindex < rindex && rindex > 0 {
+		findParenthesis(lindex, rindex-1, str+")", res)
+	}
+}
+
+func trap(height []int) int {
+	left, right := 0, len(height)-1
+
+	maxLeft, maxRight := 0, 0
+
+	var res int
+
+	for left <= right {
+		if height[left] < height[right] {
+			if height[left] < maxLeft {
+				res += maxLeft - height[left]
+			} else {
+				maxLeft = height[left]
+			}
+			left++
+		} else {
+			if height[right] < maxRight {
+				res += maxRight - height[right]
+			} else {
+				maxRight = height[right]
+			}
+			right--
+		}
+	}
+
+	return res
+}
+
+func combinationSum(nums []int, target int) [][]int {
+	if len(nums) == 0 {
+		return [][]int{}
+	}
+
+	var res [][]int
+	var c []int
+
+	sort.Ints(nums)
+
+	findCombinationSum(nums, 0, target, c, &res)
+
+	return res
+}
+
+func findCombinationSum(nums []int, index int, target int, c []int, res *[][]int) {
+	if target <= 0 {
+		if target == 0 {
+			tmp := make([]int, len(c))
+			copy(tmp, c)
+			*res = append(*res, tmp)
+		}
+		return
+	}
+
+	for i := index; i < len(nums); i++ {
+		if nums[i] > target {
+			break
+		}
+		c = append(c, nums[i])
+		findCombinationSum(nums, i, target-nums[i], c, res)
+		c = c[:len(c)-1]
+	}
+}
+
+func searchFirst(nums []int, target int) int {
+	left, right := 0, len(nums)-1
+
+	for left <= right {
+		mid := left + (right-left)>>1
+
+		if nums[mid] > target {
+			right = mid - 1
+		} else if nums[mid] < target {
+			left = mid + 1
+		} else {
+			if mid == 0 || nums[mid-1] != target {
+				return mid
+			}
+			right = mid - 1
+		}
+	}
+
+	return -1
+}
+
+func searchLast(nums []int, target int) int {
+	left, right := 0, len(nums)-1
+	for left <= right {
+		mid := left + (right-left)>>1
+
+		if nums[mid] > target {
+			right = mid - 1
+		} else if nums[mid] < target {
+			left = mid + 1
+		} else {
+			if (mid == len(nums)-1) || (nums[mid+1] != target) {
+				return mid
+			}
+			left = mid + 1
+		}
+	}
+
+	return -1
+}
+
+func searchRange(nums []int, target int) []int {
+	return []int{searchFirst(nums, target), searchLast(nums, target)}
+}

@@ -356,3 +356,148 @@ func Test_mergeTwoLists2(t *testing.T) {
 		})
 	}
 }
+
+func Test_generateParenthesis(t *testing.T) {
+	type args struct {
+		n int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []string
+	}{
+		{
+			name: "Test_generateParenthesis",
+			args: args{n: 3},
+			want: []string{"((()))", "(()())", "(())()", "()(())", "()()()"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := generateParenthesis(tt.args.n); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("generateParenthesis() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_trap(t *testing.T) {
+	type args struct {
+		height []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "trap",
+			args: args{height: []int{0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1}},
+			want: 6,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := trap(tt.args.height); got != tt.want {
+				t.Errorf("trap() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+//func Test_findCombinationSum(t *testing.T) {
+//	type args struct {
+//		nums   []int
+//		index  int
+//		target int
+//		c      []int
+//		res    *[][]int
+//	}
+//	var res [][]int
+//	tests := []struct {
+//		name string
+//		args args
+//	}{
+//		{
+//			name: "findCombinationSum",
+//			args: args{
+//				nums:   []int{2, 3, 6, 7},
+//				index:  0,
+//				target: 7,
+//				c: []int{},
+//				res: &res,
+//			},
+//		},
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			findCombinationSum(tt.args.nums, tt.args.index, tt.args.target, tt.args.c, tt.args.res)
+//			want := [][]int{
+//				{2, 2, 3},
+//				{7},
+//			}
+//			if !reflect.DeepEqual(tt.args.res, want) {
+//				t.Errorf("findCombinationSum() = %v, want %v", tt.args.res, want)
+//			}
+//		})
+//	}
+//}
+
+func Test_combinationSum(t *testing.T) {
+	type args struct {
+		nums   []int
+		target int
+	}
+	tests := []struct {
+		name string
+		args args
+		want [][]int
+	}{
+		{
+			name: "findCombinationSum",
+			args: args{
+				nums:   []int{2, 3, 6, 7},
+				target: 7,
+			},
+			want: [][]int{
+				{2, 2, 3},
+				{7},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := combinationSum(tt.args.nums, tt.args.target); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("combinationSum() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_searchRange(t *testing.T) {
+	type args struct {
+		nums   []int
+		target int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{
+			name: "search range",
+			args: args{
+				nums:   []int{5, 7, 7, 8, 8, 10},
+				target: 8,
+			},
+			want: []int{3, 4},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := searchRange(tt.args.nums, tt.args.target); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("searchRange() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
