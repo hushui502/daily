@@ -405,43 +405,43 @@ func Test_trap(t *testing.T) {
 	}
 }
 
-//func Test_findCombinationSum(t *testing.T) {
-//	type args struct {
-//		nums   []int
-//		index  int
-//		target int
-//		c      []int
-//		res    *[][]int
-//	}
-//	var res [][]int
-//	tests := []struct {
-//		name string
-//		args args
-//	}{
-//		{
-//			name: "findCombinationSum",
-//			args: args{
-//				nums:   []int{2, 3, 6, 7},
-//				index:  0,
-//				target: 7,
-//				c: []int{},
-//				res: &res,
-//			},
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			findCombinationSum(tt.args.nums, tt.args.index, tt.args.target, tt.args.c, tt.args.res)
-//			want := [][]int{
-//				{2, 2, 3},
-//				{7},
-//			}
-//			if !reflect.DeepEqual(tt.args.res, want) {
-//				t.Errorf("findCombinationSum() = %v, want %v", tt.args.res, want)
-//			}
-//		})
-//	}
-//}
+func Test_findCombinationSum(t *testing.T) {
+	type args struct {
+		nums   []int
+		index  int
+		target int
+		c      []int
+		res    *[][]int
+	}
+	var res [][]int
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "findCombinationSum",
+			args: args{
+				nums:   []int{2, 3, 6, 7},
+				index:  0,
+				target: 7,
+				c:      []int{},
+				res:    &res,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			findCombinationSum(tt.args.nums, tt.args.index, tt.args.target, tt.args.c, tt.args.res)
+			want := [][]int{
+				{2, 2, 3},
+				{7},
+			}
+			if !reflect.DeepEqual(*tt.args.res, want) {
+				t.Errorf("findCombinationSum() = %v, want %v", tt.args.res, want)
+			}
+		})
+	}
+}
 
 func Test_combinationSum(t *testing.T) {
 	type args struct {
@@ -497,6 +497,257 @@ func Test_searchRange(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := searchRange(tt.args.nums, tt.args.target); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("searchRange() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_findMedianSortedArray(t *testing.T) {
+	type args struct {
+		nums1 []float64
+		nums2 []float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		{
+			name: "findMedianSortedArray",
+			args: args{
+				nums1: []float64{1, 2, 3},
+				nums2: []float64{4, 5},
+			},
+			want: float64(3),
+		},
+		{
+			name: "findMedianSortedArray2",
+			args: args{
+				nums1: []float64{1, 2, 3, 4},
+				nums2: []float64{4, 5},
+			},
+			want: float64(3.5),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := findMedianSortedArray(tt.args.nums1, tt.args.nums2); got != tt.want {
+				t.Errorf("findMedianSortedArray() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_climbStairs(t *testing.T) {
+	type args struct {
+		n int
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "climbstairs",
+			args: args{n: 2},
+			want: 2,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := climbStairs(tt.args.n); got != tt.want {
+				t.Errorf("climbStairs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_nextPermutation(t *testing.T) {
+	type args struct {
+		nums []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{
+			name: "Test_nextPermutation",
+			args: args{nums: []int{1, 2, 3}},
+			want: []int{1, 3, 2},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := nextPermutation(tt.args.nums); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("nextPermutation() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_search(t *testing.T) {
+	type args struct {
+		nums   []int
+		target int
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "Test_search",
+			args: args{
+				nums:   []int{1, 2, 3},
+				target: 2,
+			},
+			want: 1,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := search(tt.args.nums, tt.args.target); got != tt.want {
+				t.Errorf("search() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_permute(t *testing.T) {
+	type args struct {
+		nums []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want [][]int
+	}{
+		{
+			name: "permute",
+			args: args{
+				nums: []int{1, 2, 3},
+			},
+			want: [][]int{
+				{1, 2, 3},
+				{1, 3, 2},
+				{2, 1, 3},
+				{2, 3, 1},
+				{3, 1, 2},
+				{3, 2, 1},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := permute(tt.args.nums); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("permute() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_rotate(t *testing.T) {
+	type args struct {
+		matrix [][]int
+	}
+	tests := []struct {
+		name string
+		args args
+		want [][]int
+	}{
+		{
+			name: "rotate",
+			args: args{
+				matrix: [][]int{
+					{1, 2, 3},
+					{4, 5, 6},
+					{7, 8, 9},
+				},
+			},
+			want: [][]int{
+				{7, 4, 1},
+				{8, 5, 2},
+				{9, 6, 3},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := rotate(tt.args.matrix); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("rotate() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_hasCycle(t *testing.T) {
+	type args struct {
+		head *ListNode
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := hasCycle(tt.args.head); got != tt.want {
+				t.Errorf("hasCycle() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_singleNumber(t *testing.T) {
+	type args struct {
+		nums []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "single number",
+			args: args{
+				nums: []int{1, 2, 1, 3, 2},
+			},
+			want: 3,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := singleNumber(tt.args.nums); got != tt.want {
+				t.Errorf("singleNumber() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_maxProfit(t *testing.T) {
+	type args struct {
+		prices []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "maxprofit",
+			args: args{
+				prices: []int{7, 1, 5, 3, 6, 4},
+			},
+			want: 5,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := maxProfit(tt.args.prices); got != tt.want {
+				t.Errorf("maxProfit() = %v, want %v", got, tt.want)
 			}
 		})
 	}

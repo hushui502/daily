@@ -1,6 +1,9 @@
 package main
 
-import "sort"
+import (
+	"math"
+	"sort"
+)
 
 func twoSum(nums []int, target int) []int {
 	m := make(map[int]int)
@@ -526,3 +529,313 @@ func searchLast(nums []int, target int) int {
 func searchRange(nums []int, target int) []int {
 	return []int{searchFirst(nums, target), searchLast(nums, target)}
 }
+
+func findMedianSortedArray(nums1, nums2 []float64) float64 {
+	res := append(nums1, nums2...)
+
+	sort.Float64s(res)
+
+	if len(res)%2 == 1 {
+		return res[len(res)/2]
+	}
+
+	return (res[len(res)/2-1] + res[len(res)/2]) / 2
+}
+
+func climbStairs(n int) int {
+	if n < 2 {
+		return 0
+	}
+
+	dp := make([]int, n+1)
+	dp[0] = 1
+	dp[1] = 1
+
+	for i := 2; i <= n; i++ {
+		dp[i] = dp[i-1] + dp[i-2]
+	}
+
+	return dp[n]
+}
+
+func nextPermutation(nums []int) []int {
+	n := len(nums)
+	i := n - 2
+
+	for i >= 0 && nums[i] >= nums[i+1] {
+		i--
+	}
+
+	if i >= 0 {
+		j := n - 1
+		for j >= 0 && nums[j] <= nums[i] {
+			j--
+		}
+		nums[i], nums[j] = nums[j], nums[i]
+	}
+
+	reverse(nums[i+1:])
+
+	return nums
+}
+
+func reverse(nums []int) {
+	for i, n := 0, len(nums); i < n/2; i++ {
+		nums[i], nums[n-i-1] = nums[n-i-1], nums[i]
+	}
+}
+
+func search(nums []int, target int) int {
+	if len(nums) == 0 {
+		return -1
+	}
+
+	left, right := 0, len(nums)-1
+
+	for left <= right {
+		mid := left + (right-left)>>1
+		if nums[mid] == target {
+			return mid
+		} else if nums[mid] > nums[left] {
+			if nums[left] <= target && target < nums[mid] {
+				right = mid - 1
+			} else {
+				left = mid + 1
+			}
+		} else if nums[mid] < nums[right] {
+			if nums[right] >= target && nums[mid] < target {
+				left = mid + 1
+			} else {
+				right = mid - 1
+			}
+		} else {
+			if nums[mid] == nums[left] {
+				left++
+			}
+			if nums[mid] == nums[right] {
+				right++
+			}
+		}
+	}
+
+	return -1
+}
+
+func findPermute(nums []int, index int, c []int, used *[]bool, res *[][]int) {
+	if index == len(nums) {
+		tmp := make([]int, len(c))
+		copy(tmp, c)
+		*res = append(*res, c)
+		return
+	}
+
+	for i := 0; i < len(nums); i++ {
+		if !(*used)[i] {
+			(*used)[i] = true
+			c = append(c, nums[i])
+			findPermute(nums, index+1, c, used, res)
+			c = c[:len(c)-1]
+			(*used)[i] = false
+		}
+	}
+}
+
+func permute(nums []int) [][]int {
+	var res [][]int
+
+	var c []int
+	used := make([]bool, len(nums))
+
+	findPermute(nums, 0, c, &used, &res)
+
+	return res
+}
+
+func rotate(matrix [][]int) [][]int {
+	row := len(matrix)
+	if row == 0 {
+		return [][]int{}
+	}
+
+	col := len(matrix[0])
+
+	for i := 0; i < row; i++ {
+		for j := i; j < col; j++ {
+			matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+		}
+	}
+
+	halfCol := col / 2
+	for i := 0; i < row; i++ {
+		for j := 0; j < halfCol; j++ {
+			matrix[i][j], matrix[i][col-j-1] = matrix[i][col-j-1], matrix[i][j]
+		}
+	}
+
+	return matrix
+}
+
+func hasCycle(head *ListNode) bool {
+	if head == nil || head.Next == nil {
+		return false
+	}
+
+	fast, slow := head, head
+
+	for slow != nil && fast != nil && fast.Next != nil {
+		slow = slow.Next
+		fast = fast.Next.Next
+		if slow == fast {
+			return true
+		}
+	}
+
+	return false
+}
+
+func singleNumber(nums []int) int {
+	var res int
+
+	for _, v := range nums {
+		res ^= v
+	}
+
+	return res
+}
+
+func maxProfit(prices []int) int {
+	if len(prices) == 0 {
+		return 0
+	}
+
+	min, maxProfit := prices[0], 0
+
+	for i := 0; i < len(prices); i++ {
+		if prices[i]-min > maxProfit {
+			maxProfit = prices[i] - min
+		}
+		if min > prices[i] {
+			min = prices[i]
+		}
+	}
+
+	return maxProfit
+}
+
+func preOrder(root *TreeNode, res *[]int) {
+	if root == nil {
+		return
+	}
+
+	*res = append(*res, root.Val)
+	preOrder(root.Left, res)
+	preOrder(root.Right, res)
+}
+
+func flatten(root *TreeNode) {
+	res := []int{}
+
+	preOrder(root, &res)
+
+	cur := root
+	for i := 1; i < len(res); i++ {
+		cur.Left = nil
+		cur.Right = &TreeNode{Val: res[i], Left: nil, Right: nil}
+		cur = cur.Right
+	}
+
+	return
+}
+
+func maxDepth(root *TreeNode) int {
+	if root == nil {
+		return 0
+	}
+
+	return max(maxDepth(root.Left), maxDepth(root.Right)) + 1
+}
+
+func levelOrder(root *TreeNode) [][]int {
+	if root == nil {
+		return [][]int{}
+	}
+
+	q := []*TreeNode{root}
+	curNum, nextNum := 1, 0
+	tmp := []int{}
+	res := [][]int{}
+
+	for len(q) > 0 {
+		if curNum != 0 {
+			node := q[0]
+			if node.Left != nil {
+				q = append(q, node.Left)
+				nextNum++
+			}
+			if node.Right != nil {
+				q = append(q, node.Right)
+				nextNum++
+			}
+			curNum--
+			tmp = append(tmp, node.Val)
+			q = q[1:]
+		}
+		if curNum == 0 {
+			res = append(res, tmp)
+			tmp = []int{}
+			curNum = nextNum
+			nextNum = 0
+		}
+	}
+
+	return res
+}
+
+func isSameTree(t1, t2 *TreeNode) bool {
+	if t1 == nil && t2 == nil {
+		return true
+	} else if t1 != nil && t2 != nil {
+		if t1.Val != t2.Val {
+			return false
+		}
+		return isSameTree(t1.Left, t2.Left) && isSameTree(t1.Right, t2.Right)
+	} else {
+		return false
+	}
+}
+
+func isSymmetric(root *TreeNode) bool {
+	if root == nil {
+		return true
+	}
+
+	return isSameTree(root.Left, invertTree(root.Right))
+}
+
+func invertTree(root *TreeNode) *TreeNode {
+	if root == nil {
+		return nil
+	}
+
+	invertTree(root.Left)
+	invertTree(root.Right)
+
+	root.Left, root.Right = root.Right, root.Left
+
+	return root
+}
+
+func isValidBST(root *TreeNode) bool {
+	return dfs(root, math.MinInt64, math.MaxFloat64)
+}
+
+func dfs(root *TreeNode, min, max float64) bool {
+	if root == nil {
+		return true
+	}
+	v := float64(root.Val)
+
+	return v > min && v < max && dfs(root.Left, min, v) && dfs(root.Right, v, max)
+}
+
+// 139 128 105 95 79 78 75 76
