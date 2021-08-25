@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"math/rand"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 type RecursiveMutex struct {
@@ -59,11 +62,39 @@ func GoID() int64 {
 }
 
 func main() {
-	mu := RecursiveMutex{}
+	//mu := RecursiveMutex{}
+	//
+	//mu.Lock()
+	//mu.Lock()
+	//mu.Lock()
+	//println(mu.recursion)
 
-	mu.Lock()
-	mu.Lock()
-	mu.Lock()
-	println(mu.recursion)
+	c := sync.NewCond(&sync.Mutex{})
+	var ready int
+
+	for i := 0; i < 10; i++ {
+		go func(i int) {
+			time.Sleep(time.Duration(rand.Int63n(10)) * time.Second)
+
+			c.L.Lock()
+			ready++
+			c.L.Unlock()
+
+			log.Println("ok=============")
+
+			c.Broadcast()
+		}(i)
+	}
+	sync.Once{}
+	c.L.Lock()
+	for ready != 10 {
+		c.Wait()
+		log.Println("wake up once")
+	}
+	c.L.Unlock()
+
+	println("over!!!!!!!!!")
 }
+
+
 

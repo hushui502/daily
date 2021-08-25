@@ -122,3 +122,7 @@ func (g *Group) Wait() error {
 }
 ```
 
+## goroutine 三个关键
+- 让调用者决定是否启动goroutine，而不是让被调用者内部启动，防止不可知泄露等
+- 知道整个goroutine的生命周期，也就是必须要知道开启的goroutine什么时候结束
+- 超时控制，管控goroutine，能随意控制goroutine的退出
