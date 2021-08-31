@@ -2744,3 +2744,188 @@ func maxSubarray(nums []int) int {
 
 	return res
 }
+func canJump(nums []int) bool {
+	if len(nums) == 0 {
+		return false
+	}
+
+	if len(nums) == 1 {
+		return true
+	}
+
+	maxJump := 0
+
+	for i, v := range nums {
+		if i > maxJump {
+			return false
+		}
+		maxJump = max(maxJump, i+v)
+	}
+
+	return true
+}
+
+type Interval struct {
+	Start int
+	End int
+}
+
+func merge(intervals [][]int) [][]int {
+	if len(intervals) == 0 {
+		return [][]int{}
+	}
+
+	var ints []Interval
+	var res [][]int
+
+	for _, v := range intervals {
+		ints = append(ints, Interval{Start: v[0], End: v[1]})
+	}
+
+	outs := merge1(ints)
+
+	for _, v := range outs {
+		res = append(res, []int{v.Start, v.End})
+	}
+
+	return res
+}
+
+func merge1(intervals []Interval) []Interval {
+	quickSort(intervals, 0, len(intervals))
+
+	res := make([]Interval, 0)
+	res = append(res, intervals[0])
+	curIndex := 0
+
+	for i := 1; i < len(intervals); i++ {
+		if intervals[i].Start > intervals[curIndex].End {
+			curIndex++
+			res = append(res, intervals[i])
+		} else {
+			res[curIndex].End = max(intervals[i].End, res[curIndex].End)
+		}
+	}
+
+	return res
+}
+
+func quickSort(intervals []Interval, lo, hi int) {
+	if lo >= hi {
+		return
+	}
+	p := patition(intervals, lo, hi)
+	quickSort(intervals, lo, p-1)
+	quickSort(intervals, p+1, hi)
+}
+
+func patition(a []Interval, lo, hi int) int {
+	pivot := a[hi]
+	i := lo - 1
+
+	for j := lo; j < hi; j++ {
+		if a[j].Start < pivot.Start || (a[j].Start == pivot.Start && a[j].End < pivot.End) {
+			i++
+			a[i], a[j] = a[j], a[i]
+		}
+	}
+
+	a[i+1], a[hi] = a[hi], a[i+1]
+
+	return i+1
+}
+
+func lengthOfLastWord(s string) int {
+	s = strings.Trim(s)
+	return len(s[strings.LastIndex(s, " ")+1:])
+}
+
+func rotateRight(head *ListNode, k int) *ListNode {
+	if k == 0 || head == nil || head.Next == nil {
+		return head
+	}
+	n := 1
+	dummy := head
+
+	for dummy.Next != nil {
+		dummy = dummy.Next
+		n++
+	}
+
+	add := n - k%n
+	if add == 0 {
+		return head
+	}
+	dummy.Next = head
+	for add > 0 {
+		dummy = dummy.Next
+		add--
+	}
+
+	ret := dummy.Next
+	dummy.Next = nil
+
+	return ret
+}
+
+func uniquePath(m, n int) int {
+	dp := make([][]int, m)
+	for i := 0; i < m; i++ {
+		dp[i] = make([]int, n)
+	}
+
+	for i := 0; i < m; i++ {
+		dp[i][0] = 1
+	}
+	for i := 0; i < n; i++ {
+		dp[0][i] = 1
+	}
+
+	for i := 1; i < m; i++ {
+		for j := 1; j < n; j++ {
+			dp[i][j] = dp[i-1][j] + dp[i][j-1]
+		}
+	}
+
+	return dp[m-1][n-1]
+}
+
+func minPathSum(grib [][]int) int {
+	m, n := len(grib), len(grib[0])
+
+	for i := 1; i < m; i++ {
+		grib[i][0] += grib[i-1][0]
+	}
+	for i := 1; i < n; i++ {
+		grib[0][i] += grib[0][i-1]
+	}
+
+	for i := 1; i < m; i++ {
+		for j := 1; j < n; j++ {
+			grid[i][j] += min(grid[i-1][j], grid[i][j-1])
+		}
+	}
+
+	return grib[m-1][n-1]
+}
+
+func plusOne(nums []int) []int {
+	for i := len(nums)-1; i >= 0; i-- {
+		nums[i]++
+		if nums[i]/10 == 0 {
+			return nums
+		}
+		nums[i] = nums[i]%10
+	}
+
+	return append([]int{1}, nums...)
+}
+
+func addBinary(a, b string) string {
+	ai, _ := new(big.Int).SetString(a, 2)
+	bi, _ := new(big.Int).SetString(b, 2)
+
+	ai.Add(ai, bi)
+
+	return ai.Text(2)
+}
