@@ -51,31 +51,31 @@ type Cqueue struct {
 }
 
 func NewCqueue() Cqueue {
-	return Cqueue{
-		stack1: list.New(),
-		stack2: list.New(),
-	}
+        return Cqueue{
+                stack1: list.New(),
+                stack2: list.New(),
+        }
 }
 
 func (this *Cqueue) AppendTail(value int) {
-	this.stack1.PushBack(value)
+        this.stack1.PushBack(value)
 }
 
 func (this *Cqueue) DeleteHead() int {
-	if this.stack2.Len() == 0 {
-		for this.stack1.Len() > 0 {
-			this.stack2.PushBack(this.stack1.Remove(this.stack1.Back()))
-		}
-	}
+        if this.stack2.Len() == 0 {
+                for this.stack1.Len() > 0 {
+                        this.stack2.PushBack(this.stack1.Remove(this.stack1.Back()))
+                }
+        }
 
-	if this.stack2.Len() != 0 {
-		e := this.stack2.Back()
-		this.stack2.Remove(e)
+        if this.stack2.Len() != 0 {
+                e := this.stack2.Back()
+                this.stack2.Remove(e)
 
-		return e.Value.(int)
-	}
+                return e.Value.(int)
+        }
 
-	return -1
+        return -1
 }
 
 // 12345
@@ -112,7 +112,7 @@ func buildTree(preorder []int, inorder []int) *TreeNode {
 
 	k := 0
 	for i := 0; i < len(inorder); i++ {
-		if preorder[0] == inorder[I] {
+		if preorder[0] == inorder[i] {
 			break
 		}
 		k++ 
@@ -339,7 +339,7 @@ func mergeTwoLists(l1, l2 *ListNode) *ListNode {
 	}
 
 	p := &ListNode{}
-	dummyHead = p
+	dummyHead := p
 
 	for l1 != nil && l2 != nil {
 		if l1.Val < l2.Val {
@@ -617,7 +617,7 @@ func getKthFromEnd(head *ListNode, n int) *ListNode {
 	if head == nil {
 		return nil
 	}
-
+	
 	slow, fast := head, head
 
 	for i := 0; i < n; i++ {
@@ -733,18 +733,18 @@ func findNumberIn2DArray(matrix [][]int, target int) bool {
 }
 
 func numWays(n int) int {
-	if n < 2 {
-		return 1
-	}
-	dp := make([]int, n+1)
-	dp[0] = 1
-	dp[1] = 1
+    if n < 2 {
+        return 1
+    }
+    dp := make([]int, n+1)
+    dp[0] = 1
+    dp[1] = 1
 
-	for i := 2; i <= n; i++ {
-		dp[i] = (dp[i-1] + dp[i-2]) % 1000000007
-	}
+    for i := 2; i <= n; i++ {
+        dp[i] = (dp[i-1] + dp[i-2]) % 1000000007
+    }
 
-	return dp[n]
+    return dp[n]
 }
 
 func mergeTwoLists(l1, l2 *ListNode) *ListNode {
@@ -1069,7 +1069,7 @@ func LevelOrder(root *TreeNode) [][]res {
 		if curNum != 0 {
 			node := q[0]
 			q = q[1:]
-
+			
 			if node.Left != nil {
 				q = append(q, node.Left)
 				nextNum++
@@ -1189,7 +1189,7 @@ func isValid(s string) bool {
 }
 
 func sortArray(nums []int) []int {
-
+	
 	quickSort(nums, 0, len(nums)-1)
 
 	return nums
@@ -1541,18 +1541,27 @@ func isInBoard(board [][]byte, x, y int) bool {
 }
 
 func lengthOfLIS(nums []int) int {
-	dp := []int{}
-
-	for _, num := range nums {
-		i := sort.SearchInts(dp, num)
-		if i == len(dp) {
-			dp = append(dp, num)
-		} else {
-			dp[i] = num
+	dp := make([]int, len(nums))
+	for i := 0; i < len(nums); i++ {
+		dp[i] = 1
+		for j := 0; j < len(nums); j++ {
+			if nums[i] > nums[j] {
+				dp[i] = max(dp[i], dp[j]+1)
+			}
 		}
 	}
 
-	return len(dp)
+	return max(dp...)
+}
+
+func max(args ...int) int {
+	ans := args[0]
+	for _, v := range args {
+		if ans > v {
+			ans = v
+		}
+	}
+	return ans
 }
 
 type MyQueue struct {
@@ -1583,23 +1592,23 @@ func (q *MyQueue) Pop() int {
 }
 
 func (q *MyQueue) Peek() int {
-	if len(*q.Queue) == 0 {
-		q.fromStackToQueue(q.Stack, q.Queue)
-	}
+    if len(*q.Queue) == 0 {
+        q.fromStackToQueue(q.Stack, q.Queue)
+    }
 
-	return (*q.Queue)[len(*q.Queue)-1]
+    return (*q.Queue)[len(*q.Queue)-1]
 }
 
 func (q *MyQueue) Empty() bool {
-	return len(*q.Stack) == 0 && len(*q.Queue) == 0
+    return len(*q.Stack) == 0 && len(*q.Queue) == 0
 }
 
 func (q *MyQueue) fromStackToQueue(stack, queue *[]int) {
-	for len(*q.Stack) > 0 {
-		poped := (*q.Stack)[len(*q.Stack)-1]
-		*q.Stack = (*q.Stack)[:len(*q.Stack)-1]
-		*q.Queue = append(*q.Queue, poped)
-	}
+    for len(*q.Stack) > 0 {
+    	poped := (*q.Stack)[len(*q.Stack)-1]
+        *q.Stack = (*q.Stack)[:len(*q.Stack)-1]
+        *q.Queue = append(*q.Queue, poped)
+    }
 }
 
 
@@ -1717,7 +1726,7 @@ func isPalindrome(x int) bool {
 }
 
 func longestCommonPrefix(strs []string) string {
-
+	
 	prefix := strs[0]
 
 	for i := 0; i < len(strs); i++ {
@@ -1764,16 +1773,16 @@ func abs(x int) int {
 }
 
 var letterMap = []string{
-	" ",
-	"",
-	"abc",
-	"def",
-	"ghi",
-	"jkl",
-	"mno",
-	"pqrs",
-	"tuv",
-	"wxyz",
+  	" ",
+    "",
+    "abc",
+    "def",
+    "ghi",
+    "jkl",
+    "mno",
+    "pqrs",
+    "tuv",
+    "wxyz",
 }
 
 
@@ -2149,18 +2158,18 @@ func (m *MinSatck) Push(val int) {
 }
 
 func (this *MinStack) Pop() {
-	this.stack = this.stack[:len(this.stack)-1]
-	this.min = this.min[:len(this.min)-1]
+    this.stack = this.stack[:len(this.stack)-1]
+    this.min = this.min[:len(this.min)-1]
 }
 
 
 func (this *MinStack) Top() int {
-	return this.stack[len(this.stack)-1]
+    return this.stack[len(this.stack)-1]
 }
 
 
 func (this *MinStack) GetMin() int {
-	return this.min[len(this.min)-1]
+    return this.min[len(this.min)-1]
 }
 
 func sortedArrayToBST(nums []int) *TreeNode {
@@ -2265,16 +2274,16 @@ func mySqrt(x int) int {
 	if x == 0 {
 		return 0
 	}
-
-	left, right, res := 1, x, -1
+	left, right := 0, x
+	res := 0
 
 	for left <= right {
 		mid := left + (right-left)>>1
 		if mid == x/mid {
 			return mid
 		} else if mid < x/mid {
-			left = mid+1
 			res = mid
+			left = mid+1
 		} else {
 			right = mid-1
 		}
@@ -2354,33 +2363,33 @@ func nextPermute(nums []int) {
 
 
 func wallsAndGates(rooms [][]int)  {
-	if len(rooms) == 0 || len(rooms[0]) == 0 {
-		return
-	}
-
-	m, n := len(rooms), len(rooms[0])
-
-	for i := 0; i < m; i++ {
-		for j := 0; j < n; j++ {
-			if rooms[i][j] == 0 {
-				helper(rooms, i, j, 0)
-			}
-		}
-	}
+    if len(rooms) == 0 || len(rooms[0]) == 0 {
+        return
+    }
+    
+    m, n := len(rooms), len(rooms[0])
+    
+    for i := 0; i < m; i++ {
+        for j := 0; j < n; j++ {
+            if rooms[i][j] == 0 {
+                helper(rooms, i, j, 0)
+            }
+        }
+    }
 }
 
 func helper(rooms [][]int, i, j, step int) {
-	m, n := len(rooms), len(rooms[0])
-	if i < 0 || i >= m || j < 0 || j >= n || rooms[i][j] < step {
-		return
-	}
-
-	rooms[i][j] = step
-
-	helper(rooms, i+1, j, step+1)
-	helper(rooms, i-1, j, step+1)
-	helper(rooms, i, j+1, step+1)
-	helper(rooms, i, j-1, step+1)
+    m, n := len(rooms), len(rooms[0])
+    if i < 0 || i >= m || j < 0 || j >= n || rooms[i][j] < step {
+        return
+    }
+    
+    rooms[i][j] = step
+    
+    helper(rooms, i+1, j, step+1)
+    helper(rooms, i-1, j, step+1)
+    helper(rooms, i, j+1, step+1)
+    helper(rooms, i, j-1, step+1)
 }
 
 func mergeTwoTrees(t1, t2 *TreeNode) *TreeNode {
@@ -2478,13 +2487,13 @@ func intToRoman(num int) string {
 
 
 var roman = map[string]int{
-	"I": 1,
-	"V": 5,
-	"X": 10,
-	"L": 50,
-	"C": 100,
-	"D": 500,
-	"M": 1000,
+    "I": 1,
+    "V": 5,
+    "X": 10,
+    "L": 50,
+    "C": 100,
+    "D": 500,
+    "M": 1000,
 }
 
 func romanToInt(s string) int {
@@ -2581,7 +2590,7 @@ func reverseGroup(head *ListNode, k int) *ListNode {
 }
 
 func removeDuplicates(nums []int) int {
-
+	
 	if len(nums) == 0 {
 		return 0
 	}
@@ -2613,39 +2622,39 @@ func strStr(a, b string) int {
 
 
 func search(nums []int, target int) int {
-	if len(nums) == 0 {
-		return -1
-	}
-
-	left, right := 0, len(nums)-1
-
-	for left <= right {
-		mid := left + (right-left)>>1
-		if nums[mid] == target {
-			return mid
-		} else if nums[left] < nums[mid] {
-			if nums[left] <= target && target < nums[mid] {
-				right = mid-1
-			} else {
-				left = mid+1
-			}
-		} else if nums[right] > nums[mid] {
-			if nums[right] >= target && target > nums[mid] {
-				left = mid+1
-			} else {
-				right = mid-1
-			}
-		} else {
-			if nums[mid] == nums[left] {
-				left++
-			}
-			if nums[mid] == nums[right] {
-				right--
-			}
-		}
-	}
-
-	return -1
+    if len(nums) == 0 {
+        return -1
+    }
+    
+    left, right := 0, len(nums)-1
+    
+    for left <= right {
+        mid := left + (right-left)>>1
+        if nums[mid] == target {
+        	return mid
+        } else if nums[left] < nums[mid] {
+        	if nums[left] <= target && target < nums[mid] {
+        		right = mid-1
+        	} else {
+        		left = mid+1
+        	}
+        } else if nums[right] > nums[mid] {
+        	if nums[right] >= target && target > nums[mid] {
+        		left = mid+1
+        	} else {
+        		right = mid-1
+        	}
+        } else {
+        	if nums[mid] == nums[left] {
+        		left++
+        	}
+        	if nums[mid] == nums[right] {
+                right--
+            }
+        }
+    }
+    
+    return -1
 }
 
 
@@ -2744,6 +2753,7 @@ func maxSubarray(nums []int) int {
 
 	return res
 }
+
 func canJump(nums []int) bool {
 	if len(nums) == 0 {
 		return false
@@ -2792,7 +2802,7 @@ func merge(intervals [][]int) [][]int {
 }
 
 func merge1(intervals []Interval) []Interval {
-	quickSort(intervals, 0, len(intervals))
+	quickSort(intervals, 0, len(intervals)-1)
 
 	res := make([]Interval, 0)
 	res = append(res, intervals[0])
@@ -2928,4 +2938,211 @@ func addBinary(a, b string) string {
 	ai.Add(ai, bi)
 
 	return ai.Text(2)
+}
+
+func permutation(s string) []string {
+	if s == "" {
+		return []string{}
+	}
+
+	bytes := []byte(s)
+	res := []string{}
+
+	var dfs func(int)
+
+	dfs = func(x int) {
+		if x == len(s)-1 {
+			res = append(res, string(bytes))
+		}
+
+		dict := make(map[byte]bool)
+
+		for i := x; i < len(bytes); i++ {
+			if !dict[bytes[i]] {
+				dict[bytes[i]] = true
+				bytes[i], bytes[x] = bytes[x], bytes[i]
+				dfs(x+1)
+				bytes[i], bytes[x] = bytes[x], bytes[i]
+			}
+		}
+	}
+
+	dfs(0)
+
+	return res
+}
+
+func maxPathSum(root *TreeNode) int {
+	if root == nil {
+		return 0
+	}
+	res := math.MinInt32
+	getMaxSum(root, &res)
+
+	return res    
+}
+
+func getMaxSum(root *TreeNode, maxSum *int) int {
+	if root == nil {
+		return 0
+	}
+
+	left := getMaxSum(root.Left, maxSum)
+	right := getMaxSum(root.Right, maxSum)
+
+	curMax := max(max(root.Val+left, root.Val+right), root.Val)
+	*maxSum = max(*maxSum, max(curMax, root.Val+left+right))
+
+	return curMax
+} 
+
+func topKFrequent(nums []int, k int) []int {
+	m := make(map[int]int)
+	c := []int{}
+
+	for _, v := range nums {
+		if m[v] == 0 {
+			m[v] = 1
+			c = append(c, v)
+		} else {
+			m[v]++
+		}
+	}
+
+	sort.Slice(c, func(i, j int) bool {
+		return m[c[i]] > m[c[j]]
+	})
+
+	return c[:k]
+}
+
+func sortList(head *ListNode) *ListNode {
+	return mergeSort(head)
+}
+
+func mergeSort(head *ListNode) *ListNode {
+	if head == nil || head.Next == nil {
+		return head
+	}
+	mid := findMiddle(head)
+	tail := mid.Next
+	mid.Next = nil
+	left := mergeSort(head)
+	right := mergeSort(tail)
+
+	res := mergeTwoLists(left, right)
+
+	return res
+}
+
+func mergeTwoLists(l1, l2 *ListNode) *ListNode {
+    if l1 == nil {
+		return l2
+	}
+	if l2 == nil {
+		return l1
+	}
+	for l1 != nil && l2 != nil {
+		if l1.Val < l2.Val {
+			l1.Next = mergeTwoLists(l1.Next, l2)
+			return l1
+		}
+		l2.Next = mergeTwoLists(l1, l2.Next)
+		return l2
+	}
+
+    return l1
+}
+
+func findMiddle(head *ListNode) *ListNode {
+    // 1->2->3->4->5
+    slow := head
+    fast := head.Next
+    // 快指针先为nil
+    for fast !=nil && fast.Next != nil {
+        fast = fast.Next.Next
+        slow = slow.Next
+    }
+    return slow
+}
+
+func singleNumber(nums []int) int {
+    var res int
+    for _, num := range nums {
+        res ^= num
+    }
+
+    return res
+}
+
+func moveZeros(nums []int) {
+	left, right, n := 0, 0, len(nums)
+
+	for right < n {
+		if nums[right] != 0 {
+			nums[left], nums[right] = nums[right], nums[left]
+			left++
+		}
+		right++
+	}
+}
+
+func rob(nums []int) int {
+	n := len(nums)
+	if n == 0 {
+		return 0
+	}
+	if n == 1 {
+		return nums[0]
+	}
+
+	dp := make([]int, n)
+
+	dp[0], dp[1] = nums[0], max(nums[0], nums[1])
+
+	for i := 2; i < n; i++ {
+		dp[i] = max(dp[i-1], dp[i-2]+nums[i])
+	}
+
+	return dp[n-1]
+}
+
+func decodeString(s string) string {
+    stack, res := []string{}, ""
+
+    for _, str := range s {
+        if len(stack) == 0 || (len(stack) != 0 && str != ']') {
+            stack = append(stack, string(str))
+        } else {
+            tmp := ""
+            for stack[len(stack)-1] != "[" {
+                tmp = stack[len(stack)-1] + tmp
+                stack = stack[:len(stack)-1]
+            }
+            stack = stack[:len(stack)-1]
+            index, repeat := 0, ""
+            for index = len(stack)-1; index >= 0; index-- {
+                if stack[index] >= "0" && stack[index] <= "9" {
+                    repeat = stack[index] + repeat
+                } else {
+                    break
+                }
+            }
+            nums, _ := strconv.Atoi(repeat)
+            copyTmp := tmp
+            for i := 0; i < nums-1; i++ {
+                tmp += copyTmp
+            }
+            for i := 0; i < len(repeat)-1; i++ {
+                stack = stack[:len(stack)-1]
+            }
+            stack[index+1] = tmp
+        }
+    }
+    
+    for _, s := range stack {
+        res += s
+    }
+
+    return res
 }

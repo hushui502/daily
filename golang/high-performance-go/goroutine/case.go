@@ -59,9 +59,9 @@ func main() {
 	tr := NewTracker()
 	go tr.Run()
 
-	_ = tr.Event(context.Background(), "test")
-	_ = tr.Event(context.Background(), "test")
-	_ = tr.Event(context.Background(), "test")
+	_ = tr.Event(context.Background(), "expr")
+	_ = tr.Event(context.Background(), "expr")
+	_ = tr.Event(context.Background(), "expr")
 
 	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5 * time.Second))
 	defer cancel()
@@ -73,7 +73,7 @@ func main() {
 func testCustomErr() CustomError {
 	return CustomError{
 		msg: "custom error!",
-		err: errors.New("test"),
+		err: errors.New("expr"),
 	}
 }
 

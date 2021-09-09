@@ -451,7 +451,7 @@ func main() {
             go handle(context.Background(), i*50)
     }
 
-    // for test, hang
+    // for expr, hang
     time.Sleep(time.Second)
 }
 ```
