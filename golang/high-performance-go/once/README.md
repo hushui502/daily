@@ -124,3 +124,56 @@ if atomic.CompareAndSwapUint32(&o.done, 0, 1) {
 
 
 https://geektutu.com/post/hpg-sync-once.html
+
+```bigquery
+package main
+
+type CacheEntry struct {
+    data []byte
+    once *sync.Once
+}
+
+type QueryClient struct {
+    cache map[string]*CacheEntry
+    mutex *sync.Mutex
+}
+
+func (c *QueryClient) DoQuery(name string) []byte {
+    c.mutex.Lock()
+    entry, found := c.cache[name]
+    if !found {
+        // 如果在缓存中未找到，创建新的 entry
+        entry = &CacheEntry{
+            once: new(sync.Once),
+        }
+        c.cache[name] = entry
+    }
+    c.mutex.Unlock()
+
+    // 现在，当我们调用 .Do 时，如果有一个正在同步进行的操作
+    // 它将一直阻塞，直到完成（并填充 entry.data）
+    // 或者如果操作之前已经完成过一次
+    // 本次调用不会进行操作，也不会阻塞
+    entry.once.Do(func() {
+        resp, err := http.Get("https://upstream.api/?query=" + url.QueryEscape(name))
+        // 为简洁起见，省略了错误处理和 resp.Body.Close
+        entry.data, err = ioutil.ReadAll(resp)
+    })
+
+    return entry.data
+}
+```
+
+ianlancetaylor 建议结合 context 使用 sync.Once，方式如下：
+```bigquery
+c := make(chan bool, 1)
+go func() {
+    once.Do(f)
+    c <- true
+}()
+select {
+case <-c:
+case <-ctxt.Done():
+    return
+}
+```
