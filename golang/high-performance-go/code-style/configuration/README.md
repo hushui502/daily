@@ -1,8 +1,19 @@
 ## Function Options
+type dialOptions struct {
+	CreateTime int
+	ModifyTime int
+	// when you want to add or change some parameter, you can just only add/delete/change there
+}
 
-type DialOption func(*dialOptions)
+type DialOptionFunc func(*dialOptions)
 
-func dial(network, address string, options ...DialOption) (Conn, error) {
+func WithCreateTime(time int) DialOptionFunc {
+	return func(o *dialOptions) {
+		o.CreateTime = time
+	}
+}
+
+func dial(network, address string, options ...DialOptionFunc) (Conn, error) {
 	do := dialOptions {
 		dial: net.Dial,
 	}
