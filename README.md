@@ -70,4 +70,8 @@
 
 ...Stop updating readme
 
+Thanks to jetbrains
 
+![JetBrains Black Box Logo logo](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_square.png)
+
+[you can click here to know how to get your own free license by opensource](https://jb.gg/OpenSourceSupport)
