@@ -1,0 +1,11 @@
+how to use this
+
+```go
+func main() {
+    res, err := hostfile.ReverseLookup("127.0.0.1")
+    if err != nil {
+        panic(err)
+    }
+    fmt.Printf("%v maps 127.0.0.1 to the following names: %v", hostsfile.HostsPath, res)
+}
+```
