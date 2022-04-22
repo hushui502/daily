@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::collections::{HashMap, VecDeque};
 
 fn main() {
     println!("Hello, world!");
@@ -153,6 +153,71 @@ fn max(deque: &VecDeque<i32>) -> i32 {
     *deque.front().unwrap()
 }
 
+pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {
+    let mut map: HashMap<i32, i32> = HashMap::new();
+    for i in 0..nums.len() {
+        let complement = target - nums[i];
+        if map.contains_key(&complement) {
+            return vec![map[&complement], i as i32];
+        }
+        map.insert(nums[i], i as i32);
+    }
+
+    vec![]
+}
+
+fn is_anagram(s: String, t: String) -> bool {
+    let mut map: HashMap<char, i32> = HashMap::new();
+    for c in s.chars() {
+        *map.entry(c).or_insert(0) += 1;
+    }
+
+    for c in t.chars() {
+        if !map.contains_key(&c) {
+            return false;
+        }
+        *map.entry(c).or_insert(0) -= 1;
+        if *map.get(&c).unwrap() == 0 {
+            map.remove(&c);
+        }
+    }
+
+    map.is_empty()
+}
+
+pub fn group_anagram(strs: Vec<String>) -> Vec<Vec<String>> {
+    let mut map: HashMap<String, Vec<String>> = HashMap::new();
+    for s in strs {
+        let mut chars: Vec<char> = s.chars().collect();
+        chars.sort();
+        let key = chars.iter().collect::<String>();
+        map.entry(key).or_insert(Vec::new()).push(s);
+    }
+
+    map.values().map(|v| v.to_vec()).collect()
+}
+
+pub struct ListNode {
+    val: i32,
+    next: Option<Box<ListNode>>,
+}
+
+pub fn reverse_list(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    if head.is_none() {
+        return None;
+    }
+    let mut prev: Option<Box<ListNode>> = None;
+    let mut curr = head;
+    while let Some(mut node) = curr {
+        let next = node.next.take();
+        node.next = prev.take();
+        prev = Some(node);
+        curr = next;
+    }
+
+    prev
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -206,5 +271,55 @@ mod tests {
             max_sliding_window(vec![1, 3, -1, -3, 5, 3, 6, 7], 3),
             vec![3, 3, 5, 5, 6, 7]
         );
+    }
+
+    #[test]
+    fn test_two_sum() {
+        assert_eq!(two_sum(vec![2, 7, 11, 15], 9), vec![0, 1]);
+    }
+
+    #[test]
+    fn test_is_anagram() {
+        assert_eq!(
+            is_anagram("anagram".to_string(), "nagaram".to_string()),
+            true
+        );
+        assert_eq!(is_anagram("rat".to_string(), "car".to_string()), false);
+    }
+
+    // #[test]
+    fn test_group_anagram() {
+        assert_eq!(
+            group_anagram(vec![
+                "eat".to_string(),
+                "tea".to_string(),
+                "tan".to_string(),
+                "ate".to_string(),
+                "nat".to_string(),
+                "bat".to_string()
+            ]),
+            vec![
+                vec!["tan".to_string(), "nat".to_string()],
+                vec!["bat".to_string()],
+                vec!["ate".to_string(), "eat".to_string(), "tea".to_string()],
+            ]
+        );
+    }
+
+    #[test]
+    fn test_reverse_list() {
+        let mut head = Some(Box::new(ListNode {
+            val: 1,
+            next: Some(Box::new(ListNode {
+                val: 2,
+                next: Some(Box::new(ListNode {
+                    val: 3,
+                    next: Some(Box::new(ListNode { val: 4, next: None })),
+                })),
+            })),
+        }));
+        let mut new_head = reverse_list(head);
+        assert_eq!(new_head.as_ref().unwrap().val, 4);
+        assert_eq!(new_head.unwrap().next.unwrap().val, 3);
     }
 }
