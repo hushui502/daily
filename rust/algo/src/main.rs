@@ -1,4 +1,8 @@
+use std::borrow::BorrowMut;
+use std::cell::RefCell;
 use std::collections::{HashMap, VecDeque};
+use std::process::id;
+use std::rc::Rc;
 
 fn main() {
     println!("Hello, world!");
@@ -198,128 +202,378 @@ pub fn group_anagram(strs: Vec<String>) -> Vec<Vec<String>> {
 }
 
 pub struct ListNode {
-    val: i32,
-    next: Option<Box<ListNode>>,
+    pub val: i32,
+    pub next: Option<Box<ListNode>>,
 }
 
-pub fn reverse_list(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
-    if head.is_none() {
-        return None;
-    }
-    let mut prev: Option<Box<ListNode>> = None;
-    let mut curr = head;
-    while let Some(mut node) = curr {
-        let next = node.next.take();
-        node.next = prev.take();
-        prev = Some(node);
-        curr = next;
+impl ListNode {
+    #[inline]
+    fn new(val: i32) -> Self {
+        ListNode { next: None, val }
     }
 
-    prev
+    // pub fn middle_node(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    //     let mut fast = head.as_ref().unwrap();
+    //     let mut slow = head.as_ref();
+    //
+    //     if fast.next.is_none() { return head; }
+    //
+    //     while !fast.next.is_none() && !fast.next.as_ref().unwrap().next.is_none() {
+    //         fast = fast.next.as_ref().unwrap().next.as_ref().unwrap();
+    //         if fast.next.is_none() {
+    //             return slow.unwrap().next.clone();
+    //         }
+    //         slow = slow.unwrap().next.as_ref();
+    //
+    //     }
+    //     slow.unwrap().next.clone()
+    // }
+
+    // pub fn reverse_list(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    //     if head.is_none() {
+    //         return None;
+    //     }
+    //     let mut prev: Option<Box<ListNode>> = None;
+    //     let mut curr = head;
+    //     while let Some(mut node) = curr {
+    //         let next = node.next.take();
+    //         node.next = prev.take();
+    //         prev = Some(node);
+    //         curr = next;
+    //     }
+    //
+    //     prev
+    // }
+
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_move_zeroes() {
-        let mut nums = vec![0, 1, 0, 3, 12];
-        move_zeroes(&mut nums);
-        assert_eq!(nums, vec![1, 3, 12, 0, 0]);
-    }
-
-    #[test]
-    fn test_plus_one() {
-        assert_eq!(plus_one(vec![1, 2, 3]), vec![1, 2, 4]);
-        assert_eq!(plus_one(vec![4, 3, 2, 1]), vec![4, 3, 2, 2]);
-        assert_eq!(plus_one(vec![9, 9, 9, 9]), vec![1, 0, 0, 0, 0]);
-    }
-
-    #[test]
-    fn test_remove_duplicates() {
-        let mut nums = vec![0, 0, 1, 1, 1, 2, 2, 3, 3, 4];
-        assert_eq!(remove_duplicates(&mut nums), 5);
-        // assert_eq!(nums, vec![0, 1, 2, 3, 4]);
-    }
-
-    #[test]
-    fn test_min_stack() {
-        let mut min_stack = MinStack::new();
-        min_stack.push(2);
-        min_stack.push(0);
-        min_stack.push(3);
-        min_stack.push(0);
-        assert_eq!(min_stack.get_min(), 0);
-        min_stack.pop();
-        assert_eq!(min_stack.top(), 3);
-        assert_eq!(min_stack.get_min(), 0);
-    }
-
-    #[test]
-    fn test_is_valid() {
-        assert_eq!(is_valid("()".to_string()), true);
-        assert_eq!(is_valid("()[]{}".to_string()), true);
-        assert_eq!(is_valid("(]".to_string()), false);
-        assert_eq!(is_valid("([)]".to_string()), false);
-        assert_eq!(is_valid("{[]}".to_string()), true);
-    }
-
-    #[test]
-    fn test_max_sliding_window() {
-        assert_eq!(
-            max_sliding_window(vec![1, 3, -1, -3, 5, 3, 6, 7], 3),
-            vec![3, 3, 5, 5, 6, 7]
-        );
-    }
-
-    #[test]
-    fn test_two_sum() {
-        assert_eq!(two_sum(vec![2, 7, 11, 15], 9), vec![0, 1]);
-    }
-
-    #[test]
-    fn test_is_anagram() {
-        assert_eq!(
-            is_anagram("anagram".to_string(), "nagaram".to_string()),
-            true
-        );
-        assert_eq!(is_anagram("rat".to_string(), "car".to_string()), false);
-    }
-
-    // #[test]
-    fn test_group_anagram() {
-        assert_eq!(
-            group_anagram(vec![
-                "eat".to_string(),
-                "tea".to_string(),
-                "tan".to_string(),
-                "ate".to_string(),
-                "nat".to_string(),
-                "bat".to_string()
-            ]),
-            vec![
-                vec!["tan".to_string(), "nat".to_string()],
-                vec!["bat".to_string()],
-                vec!["ate".to_string(), "eat".to_string(), "tea".to_string()],
-            ]
-        );
-    }
-
-    #[test]
-    fn test_reverse_list() {
-        let mut head = Some(Box::new(ListNode {
-            val: 1,
-            next: Some(Box::new(ListNode {
-                val: 2,
-                next: Some(Box::new(ListNode {
-                    val: 3,
-                    next: Some(Box::new(ListNode { val: 4, next: None })),
-                })),
-            })),
-        }));
-        let mut new_head = reverse_list(head);
-        assert_eq!(new_head.as_ref().unwrap().val, 4);
-        assert_eq!(new_head.unwrap().next.unwrap().val, 3);
+pub fn merge_two_lists(l1: Option<Box<ListNode>>, l2: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    match (l1, l2) {
+        (Some(n1), Some(n2)) =>
+            if n1.val < n2.val {
+                Some(Box::new(ListNode { val: n1.val, next: merge_two_lists(n1.next, Some(n2)) }))
+            } else {
+                Some(Box::new(ListNode { val: n2.val, next: merge_two_lists(Some(n1), n2.next) }))
+            }
+        (Some(n1), None) => Some(n1),
+        (None, Some(n2)) => Some(n2),
+        _ => None
     }
 }
+
+pub fn remove_nth_from_end(head: Option<Box<ListNode>>, n: i32) -> Option<Box<ListNode>> {
+    let mut dummy = Some(Box::new(ListNode { val: 0, next: head }));
+    let mut cur = &mut dummy;
+    let mut length = 0;
+
+    while let Some(node) = cur.as_mut() {
+        cur = &mut node.next;
+        if let Some(_node) = cur {
+            length += 1;
+        }
+    }
+
+    let mut new_cur = dummy.as_mut();
+    let idx = length - n;
+
+    for _ in 0..idx {
+        new_cur = new_cur.unwrap().next.as_mut();
+    }
+
+    let next = new_cur.as_mut().unwrap().next.as_mut().unwrap().next.take();
+    new_cur.as_mut().unwrap().next = next;
+
+    dummy.unwrap().next
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub struct TreeNode {
+    pub val: i32,
+    pub left: Option<Rc<RefCell<TreeNode>>>,
+    pub right: Option<Rc<RefCell<TreeNode>>>,
+}
+
+impl TreeNode {
+    #[inline]
+    pub fn new(val: i32) -> Self {
+        TreeNode {
+            val,
+            left: None,
+            right: None,
+        }
+    }
+
+    pub fn preorder_traversal(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+        let mut res = Vec::new();
+
+        if let Some(node) = root {
+            res.push(node.borrow().val);
+            res.append(&mut TreeNode::preorder_traversal(node.borrow().left.clone()));
+            res.append(&mut TreeNode::preorder_traversal(node.borrow().right.clone()));
+        }
+        res
+    }
+
+    pub fn level_order(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<Vec<i32>> {
+        let mut levels: Vec<Vec<i32>> = Vec::new();
+        if root.is_none() {
+            return levels;
+        }
+
+        let mut deque: VecDeque<Option<Rc<RefCell<TreeNode>>>> = VecDeque::new();
+        deque.push_back(root);
+
+        while !deque.is_empty() {
+            let mut current_level = vec![];
+            let level_length = deque.len();
+            for _ in 0..level_length {
+                let node = deque.pop_front().unwrap();
+                if let Some(node) = node {
+                    current_level.push(node.borrow().val);
+                    if node.borrow().left.is_some() {
+                        deque.push_back(node.borrow().left.clone());
+                    }
+                    if node.borrow().right.is_some() {
+                        deque.push_back(node.borrow().right.clone());
+                    }
+                }
+            }
+            levels.push(current_level);
+        }
+
+        levels
+    }
+}
+
+pub fn insert_into_bst(root: Option<Rc<RefCell<TreeNode>>>,val: i32) -> Option<Rc<RefCell<TreeNode>>> {
+    if let Some(r) = &root{{
+        let mut root = r.borrow_mut();
+        if val < root.val {
+            root.left=Self::insert_into_bst(root.left.take(),val)
+        } else {
+            root.right=Self::insert_into_bst(root.right.take(),val)
+        }}
+        root
+    }else{Some(Rc::new(RefCell::new(TreeNode {left:None,right:None,val: val})))}
+}
+
+
+// #[cfg(test)]
+// mod tests {
+//     use std::borrow::Borrow;
+//     use super::*;
+//
+//     #[test]
+//     fn test_move_zeroes() {
+//         let mut nums = vec![0, 1, 0, 3, 12];
+//         move_zeroes(&mut nums);
+//         assert_eq!(nums, vec![1, 3, 12, 0, 0]);
+//     }
+//
+//     #[test]
+//     fn test_plus_one() {
+//         assert_eq!(plus_one(vec![1, 2, 3]), vec![1, 2, 4]);
+//         assert_eq!(plus_one(vec![4, 3, 2, 1]), vec![4, 3, 2, 2]);
+//         assert_eq!(plus_one(vec![9, 9, 9, 9]), vec![1, 0, 0, 0, 0]);
+//     }
+//
+//     #[test]
+//     fn test_remove_duplicates() {
+//         let mut nums = vec![0, 0, 1, 1, 1, 2, 2, 3, 3, 4];
+//         assert_eq!(remove_duplicates(&mut nums), 5);
+//         // assert_eq!(nums, vec![0, 1, 2, 3, 4]);
+//     }
+//
+//     #[test]
+//     fn test_min_stack() {
+//         let mut min_stack = MinStack::new();
+//         min_stack.push(2);
+//         min_stack.push(0);
+//         min_stack.push(3);
+//         min_stack.push(0);
+//         assert_eq!(min_stack.get_min(), 0);
+//         min_stack.pop();
+//         assert_eq!(min_stack.top(), 3);
+//         assert_eq!(min_stack.get_min(), 0);
+//     }
+//
+//     #[test]
+//     fn test_is_valid() {
+//         assert_eq!(is_valid("()".to_string()), true);
+//         assert_eq!(is_valid("()[]{}".to_string()), true);
+//         assert_eq!(is_valid("(]".to_string()), false);
+//         assert_eq!(is_valid("([)]".to_string()), false);
+//         assert_eq!(is_valid("{[]}".to_string()), true);
+//     }
+//
+//     #[test]
+//     fn test_max_sliding_window() {
+//         assert_eq!(
+//             max_sliding_window(vec![1, 3, -1, -3, 5, 3, 6, 7], 3),
+//             vec![3, 3, 5, 5, 6, 7]
+//         );
+//     }
+//
+//     #[test]
+//     fn test_two_sum() {
+//         assert_eq!(two_sum(vec![2, 7, 11, 15], 9), vec![0, 1]);
+//     }
+//
+//     #[test]
+//     fn test_is_anagram() {
+//         assert_eq!(
+//             is_anagram("anagram".to_string(), "nagaram".to_string()),
+//             true
+//         );
+//         assert_eq!(is_anagram("rat".to_string(), "car".to_string()), false);
+//     }
+//
+//     // #[test]
+//     fn test_group_anagram() {
+//         assert_eq!(
+//             group_anagram(vec![
+//                 "eat".to_string(),
+//                 "tea".to_string(),
+//                 "tan".to_string(),
+//                 "ate".to_string(),
+//                 "nat".to_string(),
+//                 "bat".to_string()
+//             ]),
+//             vec![
+//                 vec!["tan".to_string(), "nat".to_string()],
+//                 vec!["bat".to_string()],
+//                 vec!["ate".to_string(), "eat".to_string(), "tea".to_string()],
+//             ]
+//         );
+//     }
+//
+//     // #[test]
+//     // fn test_reverse_list() {
+//     //     let mut head = Some(Box::new(ListNode {
+//     //         val: 1,
+//     //         next: Some(Box::new(ListNode {
+//     //             val: 2,
+//     //             next: Some(Box::new(ListNode {
+//     //                 val: 3,
+//     //                 next: Some(Box::new(ListNode { val: 4, next: None })),
+//     //             })),
+//     //         })),
+//     //     }));
+//     //     let mut new_head = reverse_list(head);
+//     //     assert_eq!(new_head.as_ref().unwrap().val, 4);
+//     //     assert_eq!(new_head.unwrap().next.unwrap().val, 3);
+//     // }
+//     //
+//     // #[test]
+//     // fn test_middle_node() {
+//     //     let mut head = Some(Box::new(ListNode {
+//     //         val: 1,
+//     //         next: Some(Box::new(ListNode {
+//     //             val: 2,
+//     //             next: Some(Box::new(ListNode {
+//     //                 val: 3,
+//     //                 next: Some(Box::new(ListNode { val: 4, next: None })),
+//     //             })),
+//     //         })),
+//     //     }));
+//     //     assert_eq!(middle_node(head).unwrap().val, 3);
+//     // }
+//
+//     #[test]
+//     fn test_merge_two_lists() {
+//         let mut l1 = Some(Box::new(ListNode {
+//             val: 1,
+//             next: Some(Box::new(ListNode {
+//                 val: 2,
+//                 next: Some(Box::new(ListNode {
+//                     val: 4,
+//                     next: None,
+//                 })),
+//             })),
+//         }));
+//         let mut l2 = Some(Box::new(ListNode {
+//             val: 1,
+//             next: Some(Box::new(ListNode {
+//                 val: 3,
+//                 next: Some(Box::new(ListNode {
+//                     val: 4,
+//                     next: None,
+//                 })),
+//             })),
+//         }));
+//         let new_head = merge_two_lists(l1, l2);
+//         assert_eq!(new_head.as_ref().unwrap().val, 1);
+//         assert_eq!(new_head.as_ref().unwrap().next.as_ref().unwrap().val, 1);
+//         assert_eq!(new_head.as_ref().unwrap().next.as_ref().unwrap().next.as_ref().unwrap().val, 2);
+//         // assert_eq!(new_head.unwrap().next.unwrap().next.unwrap().next.unwrap().val, 3);
+//         // assert_eq!(new_head.unwrap().next.unwrap().next.unwrap().next.unwrap().next.unwrap().val, 4);
+//         // assert_eq!(new_head.unwrap().next.unwrap().next.unwrap().next.unwrap().next.unwrap().next.unwrap().val, 4);
+//     }
+//
+//     #[test]
+//     fn test_remove_nth_from_end() {
+//         let mut head = Some(Box::new(ListNode {
+//             val: 1,
+//             next: Some(Box::new(ListNode {
+//                 val: 2,
+//                 next: Some(Box::new(ListNode {
+//                     val: 3,
+//                     next: Some(Box::new(ListNode {
+//                         val: 4,
+//                         next: Some(Box::new(ListNode {
+//                             val: 5,
+//                             next: None,
+//                         })),
+//                     })),
+//                 })),
+//             })),
+//         }));
+//         let new_head = remove_nth_from_end(head, 2);
+//         assert_eq!(new_head.as_ref().unwrap().val, 1);
+//         // assert_eq!(new_head.as_ref().unwrap().next.as_ref().unwrap().val, 2);
+//         // assert_eq!(new_head.as_ref().unwrap().next.as_ref().unwrap().next.as_ref().unwrap().val, 4);
+//         // assert_eq!(new_head.as_ref().unwrap().next.as_ref().unwrap().next.as_ref().unwrap().next.as_ref().unwrap().val, 5);
+//     }
+//
+//     #[test]
+//     fn test_preorder_traversal() {
+//         let mut root = Option::from(
+//             Rc::new(RefCell::new(TreeNode {
+//                 val: 1,
+//                 left: Some(Rc::new(RefCell::new(TreeNode {
+//                     val: 2,
+//                     left: None,
+//                     right: None,
+//                 }))),
+//                 right: Some(Rc::new(RefCell::new(TreeNode {
+//                     val: 3,
+//                     left: None,
+//                     right: None,
+//                 }))),
+//             })
+//         ));
+//         let result = TreeNode::preorder_traversal(root);
+//         assert_eq!(result, vec![1, 2, 3]);
+//     }
+//
+//     #[test]
+//     fn test_level_order() {
+//         let mut root = Option::from(
+//             Rc::new(RefCell::new(TreeNode {
+//                 val: 1,
+//                 left: Some(Rc::new(RefCell::new(TreeNode {
+//                     val: 2,
+//                     left: None,
+//                     right: None,
+//                 }))),
+//                 right: Some(Rc::new(RefCell::new(TreeNode {
+//                     val: 3,
+//                     left: None,
+//                     right: None,
+//                 }))),
+//             })
+//         ));
+//         let result = TreeNode::level_order(root);
+//         assert_eq!(result, vec![vec![1], vec![2, 3]]);
+//     }
+// }
