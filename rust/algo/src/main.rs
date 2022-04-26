@@ -245,20 +245,29 @@ impl ListNode {
     //
     //     prev
     // }
-
 }
 
-pub fn merge_two_lists(l1: Option<Box<ListNode>>, l2: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+pub fn merge_two_lists(
+    l1: Option<Box<ListNode>>,
+    l2: Option<Box<ListNode>>,
+) -> Option<Box<ListNode>> {
     match (l1, l2) {
-        (Some(n1), Some(n2)) =>
+        (Some(n1), Some(n2)) => {
             if n1.val < n2.val {
-                Some(Box::new(ListNode { val: n1.val, next: merge_two_lists(n1.next, Some(n2)) }))
+                Some(Box::new(ListNode {
+                    val: n1.val,
+                    next: merge_two_lists(n1.next, Some(n2)),
+                }))
             } else {
-                Some(Box::new(ListNode { val: n2.val, next: merge_two_lists(Some(n1), n2.next) }))
+                Some(Box::new(ListNode {
+                    val: n2.val,
+                    next: merge_two_lists(Some(n1), n2.next),
+                }))
             }
+        }
         (Some(n1), None) => Some(n1),
         (None, Some(n2)) => Some(n2),
-        _ => None
+        _ => None,
     }
 }
 
@@ -309,8 +318,12 @@ impl TreeNode {
 
         if let Some(node) = root {
             res.push(node.borrow().val);
-            res.append(&mut TreeNode::preorder_traversal(node.borrow().left.clone()));
-            res.append(&mut TreeNode::preorder_traversal(node.borrow().right.clone()));
+            res.append(&mut TreeNode::preorder_traversal(
+                node.borrow().left.clone(),
+            ));
+            res.append(&mut TreeNode::preorder_traversal(
+                node.borrow().right.clone(),
+            ));
         }
         res
     }
@@ -343,6 +356,98 @@ impl TreeNode {
         }
 
         levels
+    }
+
+    pub fn max_depth(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        if root.is_none() {
+            return 0;
+        }
+
+        let mut deque: VecDeque<Option<Rc<RefCell<TreeNode>>>> = VecDeque::new();
+        deque.push_back(root);
+
+        let mut depth = 0;
+        while !deque.is_empty() {
+            let level_length = deque.len();
+            for _ in 0..level_length {
+                let node = deque.pop_front().unwrap();
+                if let Some(node) = node {
+                    if node.borrow().left.is_some() {
+                        deque.push_back(node.borrow().left.clone());
+                    }
+                    if node.borrow().right.is_some() {
+                        deque.push_back(node.borrow().right.clone());
+                    }
+                }
+            }
+            depth += 1;
+        }
+
+        depth
+    }
+
+    pub fn max_depth2(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        match root {
+            Some(node) => {
+                let left = TreeNode::max_depth2(node.borrow().left.clone());
+                let right = TreeNode::max_depth2(node.borrow().right.clone());
+                left.max(right) + 1
+            }
+            None => 0,
+        }
+    }
+
+    pub fn min_depth(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        if root.is_none() {
+            return 0;
+        }
+
+        let mut deque: VecDeque<Option<Rc<RefCell<TreeNode>>>> = VecDeque::new();
+        deque.push_back(root);
+
+        let mut depth = 0;
+        while !deque.is_empty() {
+            let level_length = deque.len();
+            for _ in 0..level_length {
+                let node = deque.pop_front().unwrap();
+                if let Some(node) = node {
+                    if node.borrow().left.is_none() && node.borrow().right.is_none() {
+                        return depth + 1;
+                    }
+                    if node.borrow().left.is_some() {
+                        deque.push_back(node.borrow().left.clone());
+                    }
+                    if node.borrow().right.is_some() {
+                        deque.push_back(node.borrow().right.clone());
+                    }
+                }
+            }
+            depth += 1;
+        }
+
+        depth
+    }
+
+    pub fn search_bst(
+        root: Option<Rc<RefCell<TreeNode>>>,
+        val: i32,
+    ) -> Option<Rc<RefCell<TreeNode>>> {
+        if root.is_none() {
+            return None;
+        }
+
+        let mut r = root.clone();
+        while let Some(node) = r {
+            if node.borrow().val == val {
+                return Some(node);
+            } else if node.borrow().val > val {
+                r = node.borrow().left.clone();
+            } else {
+                r = node.borrow().right.clone();
+            }
+        }
+
+        None
     }
 }
 
@@ -453,7 +558,7 @@ fn backtrack_combine(vecs: &mut Vec<Vec<i32>>, vec: &mut Vec<i32>, n: i32, k: i3
     }
 
     let mut i = index;
-    while i <= (n - (k-vec.len() as i32) + 1) as usize {
+    while i <= (n - (k - vec.len() as i32) + 1) as usize {
         vec.push(i as i32);
         backtrack_combine(vecs, vec, n, k, i + 1);
         vec.pop();
@@ -462,10 +567,287 @@ fn backtrack_combine(vecs: &mut Vec<Vec<i32>>, vec: &mut Vec<i32>, n: i32, k: i3
     }
 }
 
+pub fn solve_n_queens(n: i32) -> Vec<Vec<String>> {
+    if n == 0 {
+        return Vec::new();
+    }
+
+    let mut board = vec![vec!['.'; n as usize]; n as usize];
+    let mut res: Vec<Vec<String>> = vec![];
+    backtrack_n_queens(&mut board, &mut res, n, 0);
+
+    res
+}
+
+pub fn backtrack_n_queens(
+    board: &mut Vec<Vec<char>>,
+    res: &mut Vec<Vec<String>>,
+    n: i32,
+    row: i32,
+) {
+    for column in 0..n {
+        if !collision(&board, n, row, column) {
+            board[row as usize][column as usize] = 'Q';
+            if row == n - 1 {
+                res.push(board.iter().map(|vec| vec.iter().collect()).collect());
+            } else {
+                backtrack_n_queens(board, res, n, row + 1);
+            }
+            board[row as usize][column as usize] = '.';
+        }
+    }
+}
+
+pub fn collision(board: &Vec<Vec<char>>, n: i32, row: i32, column: i32) -> bool {
+    let mut up_row = row - 1;
+    let mut left_column = column - 1;
+    let mut right_column = column + 1;
+
+    while up_row >= 0 {
+        if board[up_row as usize][column as usize] == 'Q' {
+            return true;
+        }
+        if left_column >= 0 && board[up_row as usize][left_column as usize] == 'Q' {
+            return true;
+        }
+        if right_column < n && board[up_row as usize][right_column as usize] == 'Q' {
+            return true;
+        }
+        up_row -= 1;
+        left_column -= 1;
+        right_column += 1;
+    }
+
+    false
+}
+
+fn middle_search(nums: Vec<i32>, target: i32) -> i32 {
+    let mut left = 0;
+    let mut right = nums.len() - 1;
+
+    while left <= right {
+        let mid = (left + right) / 2;
+        if nums[mid] == target {
+            return mid as i32;
+        } else if nums[mid] > target {
+            right = mid - 1;
+        } else {
+            left = mid + 1;
+        }
+    }
+
+    -1
+}
+
+pub fn rotate_search(nums: Vec<i32>, target: i32) -> i32 {
+    if nums.len() == 0 {
+        return -1;
+    }
+
+    let mut left = 0;
+    let mut right = nums.len() - 1;
+
+    while left <= right {
+        let mid = (left + right) / 2;
+        if nums[mid] == target {
+            return mid as i32;
+        } else if nums[left] <= nums[mid] {
+            if target >= nums[left] && target < nums[mid] {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        } else {
+            if target > nums[mid] && target <= nums[right] {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+    }
+
+    -1
+}
+
+pub fn is_perfect_square(num: i32) -> bool {
+    if num == 1 {
+        return true;
+    }
+
+    let mut left = 1;
+    let mut right = num;
+
+    while left <= right {
+        let mid = (left + right) / 2;
+        let square = mid * mid;
+        if square == num {
+            return true;
+        } else if square > num {
+            right = mid - 1;
+        } else {
+            left = mid + 1;
+        }
+    }
+
+    false
+}
+
+pub fn bubble_sort(nums: &mut Vec<i32>) {
+    let mut swapped = true;
+    while swapped {
+        swapped = false;
+        for i in 0..nums.len() - 1 {
+            if nums[i] > nums[i + 1] {
+                nums.swap(i, i + 1);
+                swapped = true;
+            }
+        }
+    }
+}
+
+fn insertion_sort(nums: &mut Vec<i32>) {
+    for i in 1..nums.len() {
+        let mut j = i;
+        while j > 0 && nums[j - 1] > nums[j] {
+            nums.swap(j - 1, j);
+            j -= 1;
+        }
+    }
+}
+
+fn selection_sort(nums: &mut Vec<i32>) {
+    for i in 0..nums.len() {
+        let mut min_index = i;
+        for j in i..nums.len() {
+            if nums[j] < nums[min_index] {
+                min_index = j;
+            }
+        }
+        nums.swap(i, min_index);
+    }
+}
+
+fn heap_sort(nums: &mut Vec<i32>) {
+    build_heap(nums);
+
+    for i in (0..nums.len()).rev() {
+        nums.swap(0, i);
+        heapify(nums, 0, i);
+    }
+}
+
+fn build_heap(nums: &mut Vec<i32>) {
+    let len = nums.len();
+    for i in (0..len / 2).rev() {
+        heapify(nums, i, len);
+    }
+}
+
+fn heapify(nums: &mut Vec<i32>, i: usize, heap_size: usize) {
+    let left = 2 * i + 1;
+    let right = 2 * i + 2;
+    let mut largest = i;
+
+    if left < heap_size && nums[left] > nums[largest] {
+        largest = left;
+    }
+
+    if right < heap_size && nums[right] > nums[largest] {
+        largest = right;
+    }
+
+    if largest != i {
+        nums.swap(i, largest);
+        heapify(nums, largest, heap_size);
+    }
+}
+
+fn merge_sort(nums: &mut Vec<i32>) {
+    let len = nums.len();
+    if len <= 1 {
+        return;
+    }
+
+    let mid = len / 2;
+    let mut left = Vec::new();
+    let mut right = Vec::new();
+
+    for i in 0..mid {
+        left.push(nums[i]);
+    }
+
+    for i in mid..len {
+        right.push(nums[i]);
+    }
+
+    merge_sort(&mut left);
+    merge_sort(&mut right);
+
+    merge(nums, &left, &right);
+}
+
+fn merge(nums: &mut Vec<i32>, left: &Vec<i32>, right: &Vec<i32>) {
+    let mut i = 0;
+    let mut j = 0;
+    let mut k = 0;
+
+    while i < left.len() && j < right.len() {
+        if left[i] <= right[j] {
+            nums[k] = left[i];
+            i += 1;
+        } else {
+            nums[k] = right[j];
+            j += 1;
+        }
+        k += 1;
+    }
+
+    while i < left.len() {
+        nums[k] = left[i];
+        i += 1;
+        k += 1;
+    }
+
+    while j < right.len() {
+        nums[k] = right[j];
+        j += 1;
+        k += 1;
+    }
+}
+
+fn quick_sort(nums: &mut Vec<i32>) {
+    let len = nums.len();
+    if len <= 1 {
+        return;
+    }
+
+    let pivot = nums[0];
+    let mut left = Vec::new();
+    let mut right = Vec::new();
+
+    for i in 1..len {
+        if nums[i] < pivot {
+            left.push(nums[i]);
+        } else {
+            right.push(nums[i]);
+        }
+    }
+
+    quick_sort(&mut left);
+    quick_sort(&mut right);
+
+    left.push(pivot);
+    left.append(&mut right);
+
+    for i in 0..len {
+        nums[i] = left[i];
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::borrow::Borrow;
     use super::*;
+    use std::borrow::Borrow;
 
     #[test]
     fn test_move_zeroes() {
@@ -589,26 +971,32 @@ mod tests {
             val: 1,
             next: Some(Box::new(ListNode {
                 val: 2,
-                next: Some(Box::new(ListNode {
-                    val: 4,
-                    next: None,
-                })),
+                next: Some(Box::new(ListNode { val: 4, next: None })),
             })),
         }));
         let mut l2 = Some(Box::new(ListNode {
             val: 1,
             next: Some(Box::new(ListNode {
                 val: 3,
-                next: Some(Box::new(ListNode {
-                    val: 4,
-                    next: None,
-                })),
+                next: Some(Box::new(ListNode { val: 4, next: None })),
             })),
         }));
         let new_head = merge_two_lists(l1, l2);
         assert_eq!(new_head.as_ref().unwrap().val, 1);
         assert_eq!(new_head.as_ref().unwrap().next.as_ref().unwrap().val, 1);
-        assert_eq!(new_head.as_ref().unwrap().next.as_ref().unwrap().next.as_ref().unwrap().val, 2);
+        assert_eq!(
+            new_head
+                .as_ref()
+                .unwrap()
+                .next
+                .as_ref()
+                .unwrap()
+                .next
+                .as_ref()
+                .unwrap()
+                .val,
+            2
+        );
         // assert_eq!(new_head.unwrap().next.unwrap().next.unwrap().next.unwrap().val, 3);
         // assert_eq!(new_head.unwrap().next.unwrap().next.unwrap().next.unwrap().next.unwrap().val, 4);
         // assert_eq!(new_head.unwrap().next.unwrap().next.unwrap().next.unwrap().next.unwrap().next.unwrap().val, 4);
@@ -624,10 +1012,7 @@ mod tests {
                     val: 3,
                     next: Some(Box::new(ListNode {
                         val: 4,
-                        next: Some(Box::new(ListNode {
-                            val: 5,
-                            next: None,
-                        })),
+                        next: Some(Box::new(ListNode { val: 5, next: None })),
                     })),
                 })),
             })),
@@ -641,42 +1026,38 @@ mod tests {
 
     #[test]
     fn test_preorder_traversal() {
-        let mut root = Option::from(
-            Rc::new(RefCell::new(TreeNode {
-                val: 1,
-                left: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 2,
-                    left: None,
-                    right: None,
-                }))),
-                right: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 3,
-                    left: None,
-                    right: None,
-                }))),
-            })
-        ));
+        let mut root = Option::from(Rc::new(RefCell::new(TreeNode {
+            val: 1,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 2,
+                left: None,
+                right: None,
+            }))),
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                val: 3,
+                left: None,
+                right: None,
+            }))),
+        })));
         let result = TreeNode::preorder_traversal(root);
         assert_eq!(result, vec![1, 2, 3]);
     }
 
     #[test]
     fn test_level_order() {
-        let mut root = Option::from(
-            Rc::new(RefCell::new(TreeNode {
-                val: 1,
-                left: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 2,
-                    left: None,
-                    right: None,
-                }))),
-                right: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 3,
-                    left: None,
-                    right: None,
-                }))),
-            })
-        ));
+        let mut root = Option::from(Rc::new(RefCell::new(TreeNode {
+            val: 1,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 2,
+                left: None,
+                right: None,
+            }))),
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                val: 3,
+                left: None,
+                right: None,
+            }))),
+        })));
         let result = TreeNode::level_order(root);
         assert_eq!(result, vec![vec![1], vec![2, 3]]);
     }
@@ -697,18 +1078,220 @@ mod tests {
     #[test]
     fn test_generate_parenthesis() {
         let result = generate_parenthesis(3);
-        assert_eq!(result, vec!["((()))", "(()())", "(())()", "()(())", "()()()"]);
+        assert_eq!(
+            result,
+            vec!["((()))", "(()())", "(())()", "()(())", "()()()"]
+        );
     }
 
     #[test]
     fn test_subsets() {
         let result = subsets(vec![1, 2, 3]);
-        assert_eq!(result, vec![vec![], vec![1], vec![1, 2], vec![1, 2, 3], vec![1, 3], vec![2], vec![2, 3], vec![3]]);
+        assert_eq!(
+            result,
+            vec![
+                vec![],
+                vec![1],
+                vec![1, 2],
+                vec![1, 2, 3],
+                vec![1, 3],
+                vec![2],
+                vec![2, 3],
+                vec![3]
+            ]
+        );
     }
 
     #[test]
     fn test_combine() {
         let result = combine(4, 2);
-        assert_eq!(result, vec![vec![1, 2], vec![1, 3], vec![1, 4], vec![2, 3], vec![2, 4], vec![3, 4]]);
+        assert_eq!(
+            result,
+            vec![
+                vec![1, 2],
+                vec![1, 3],
+                vec![1, 4],
+                vec![2, 3],
+                vec![2, 4],
+                vec![3, 4]
+            ]
+        );
+    }
+
+    #[test]
+    fn test_slove_n_queens() {
+        let result = solve_n_queens(4);
+        assert_eq!(
+            result,
+            vec![
+                vec![".Q..", "...Q", "Q...", "..Q."],
+                vec!["..Q.", "Q...", "...Q", ".Q.."]
+            ]
+        );
+    }
+
+    #[test]
+    fn test_middle_search() {
+        let result = middle_search(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 6);
+        assert_eq!(result, 5);
+    }
+
+    #[test]
+    fn test_rotate_search() {
+        let result = rotate_search(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 6);
+        assert_eq!(result, 5);
+    }
+
+    #[test]
+    fn test_is_perfect_square() {
+        assert_eq!(is_perfect_square(1), true);
+        assert_eq!(is_perfect_square(4), true);
+        assert_eq!(is_perfect_square(16), true);
+        assert_eq!(is_perfect_square(14), false);
+    }
+
+    #[test]
+    fn test_max_depth() {
+        let mut root = Option::from(Rc::new(RefCell::new(TreeNode {
+            val: 1,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 2,
+                left: None,
+                right: None,
+            }))),
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                val: 3,
+                left: None,
+                right: None,
+            }))),
+        })));
+        assert_eq!(TreeNode::max_depth(root), 2);
+    }
+
+    #[test]
+    fn test_max_depth2() {
+        let mut root = Option::from(Rc::new(RefCell::new(TreeNode {
+            val: 1,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 2,
+                left: None,
+                right: None,
+            }))),
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                val: 3,
+                left: None,
+                right: Some(Rc::new(RefCell::new(TreeNode {
+                    val: 4,
+                    left: None,
+                    right: None,
+                }))),
+            }))),
+        })));
+        assert_eq!(TreeNode::max_depth2(root), 3);
+    }
+
+    #[test]
+    fn test_min_depth() {
+        let mut root = Option::from(Rc::new(RefCell::new(TreeNode {
+            val: 1,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 2,
+                left: None,
+                right: None,
+            }))),
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                val: 3,
+                left: None,
+                right: Some(Rc::new(RefCell::new(TreeNode {
+                    val: 4,
+                    left: None,
+                    right: None,
+                }))),
+            }))),
+        })));
+        assert_eq!(TreeNode::min_depth(root), 2);
+    }
+
+    #[test]
+    fn test_search_bst() {
+        let mut root = Option::from(Rc::new(RefCell::new(TreeNode {
+            val: 4,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 2,
+                left: Some(Rc::new(RefCell::new(TreeNode {
+                    val: 1,
+                    left: None,
+                    right: None,
+                }))),
+                right: Some(Rc::new(RefCell::new(TreeNode {
+                    val: 3,
+                    left: None,
+                    right: None,
+                }))),
+            }))),
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                val: 6,
+                left: Some(Rc::new(RefCell::new(TreeNode {
+                    val: 5,
+                    left: None,
+                    right: None,
+                }))),
+                right: Some(Rc::new(RefCell::new(TreeNode {
+                    val: 7,
+                    left: None,
+                    right: None,
+                }))),
+            }))),
+        })));
+        assert_eq!(
+            TreeNode::search_bst(root, 5),
+            Some(Rc::new(RefCell::new(TreeNode {
+                val: 5,
+                left: None,
+                right: None,
+            })))
+        );
+    }
+
+    #[test]
+    fn test_bubble_sort() {
+        let mut arr = vec![5, 4, 3, 2, 1];
+        bubble_sort(&mut arr);
+        assert_eq!(arr, vec![1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_insertion_sort() {
+        let mut arr = vec![5, 4, 3, 2, 1];
+        insertion_sort(&mut arr);
+        assert_eq!(arr, vec![1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_selection_sort() {
+        let mut arr = vec![5, 4, 3, 2, 1];
+        selection_sort(&mut arr);
+        assert_eq!(arr, vec![1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_heap_sort() {
+        let mut arr = vec![5, 4, 3, 2, 1];
+        heap_sort(&mut arr);
+        assert_eq!(arr, vec![1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_merge_sort() {
+        let mut arr = vec![5, 4, 3, 2, 1];
+        merge_sort(&mut arr);
+        assert_eq!(arr, vec![1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_quick_sort() {
+        let mut arr = vec![5, 4, 3, 2, 1];
+        quick_sort(&mut arr);
+        assert_eq!(arr, vec![1, 2, 3, 4, 5]);
     }
 }
