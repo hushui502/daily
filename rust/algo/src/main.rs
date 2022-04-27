@@ -844,6 +844,35 @@ fn quick_sort(nums: &mut Vec<i32>) {
     }
 }
 
+pub fn coin_change(coins: Vec<i32>, amount: i32) -> i32 {
+    let mut dp = vec![amount + 1; amount as usize + 1];
+    dp[0] = 0;
+    for coin in coins {
+        (coin as usize..=amount as usize).for_each(|i| {
+            dp[i] = dp[i].min(dp[i - coin as usize] + 1);
+        });
+    }
+    if dp[amount as usize] == amount + 1 {
+        -1
+    } else {
+        dp[amount as usize]
+    }
+}
+
+pub fn length_of_lis(nums: Vec<i32>) -> i32 {
+    let mut dp = vec![1; nums.len()];
+    let mut max = 0;
+    for i in 1..nums.len() {
+        for j in 0..i {
+            if nums[i] > nums[j] {
+                dp[i] = dp[i].max(dp[j] + 1);
+            }
+        }
+        max = max.max(dp[i]);
+    }
+    max
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1293,5 +1322,17 @@ mod tests {
         let mut arr = vec![5, 4, 3, 2, 1];
         quick_sort(&mut arr);
         assert_eq!(arr, vec![1, 2, 3, 4, 5]);
+    }
+
+    #[test]
+    fn test_coin_change() {
+        let res = vec![1, 2, 5];
+        assert_eq!(coin_change(res, 11), 3);
+    }
+
+    #[test]
+    fn test_length_of_lis() {
+        let res = vec![1, 3, 5, 4, 7, 9, 2, 5];
+        assert_eq!(length_of_lis(res), 5);
     }
 }
