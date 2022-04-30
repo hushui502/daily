@@ -1,6 +1,6 @@
 use std::borrow::BorrowMut;
 use std::cell::RefCell;
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::format;
 use std::process::id;
 use std::rc::Rc;
@@ -873,6 +873,97 @@ pub fn length_of_lis(nums: Vec<i32>) -> i32 {
     max
 }
 
+pub fn intersection(nums: Vec<Vec<i32>>) -> Vec<i32> {
+    let mut result = vec![];
+    let mut map = HashMap::new();
+    for num in &nums {
+        for i in num {
+            map.insert(i, map.get(&i).unwrap_or(&0) + 1);
+        }
+    }
+
+    for (k, v) in map.iter() {
+        if *v == nums.len() {
+            result.push(**k);
+        }
+    }
+
+    result.sort();
+    result
+}
+
+fn is_unique(s: String) -> bool {
+    let mut map = HashMap::new();
+    for c in s.chars() {
+        if let Some(v) = map.get(&c) {
+            if *v == 1 {
+                return false;
+            }
+        } else {
+            map.insert(c, 1);
+        }
+    }
+    true
+}
+
+fn check_permutation(s1: String, s2: String) -> bool {
+    if s1.len() != s2.len() {
+        return false;
+    }
+
+    let mut map = HashMap::new();
+    for c in s1.chars() {
+        if let Some(v) = map.get(&c) {
+            map.insert(c, *v + 1);
+        } else {
+            map.insert(c, 1);
+        }
+    }
+
+    for c in s2.chars() {
+        if let Some(v) = map.get(&c) {
+            if *v == 1 {
+                map.remove(&c);
+            } else {
+                map.insert(c, *v - 1);
+            }
+        } else {
+            return false;
+        }
+    }
+
+    map.is_empty()
+}
+
+fn check_permutation2(s1: String, s2: String) -> bool {
+    let (mut a, mut b) = ([0; 26], [0; 26]);
+    s1.chars().for_each(|c| a[c as usize - 'a' as usize] += 1);
+    s2.chars().for_each(|c| b[c as usize - 'a' as usize] += 1);
+
+    a == b
+}
+
+fn replace_spaces(s: String, length: i32) -> String {
+    s[..length as usize].replace(" ", "%20")
+}
+
+fn can_permute_palindrome(s: String) -> bool {
+    let mut map = HashMap::new();
+    for c in s.chars() {
+        if let Some(v) = map.get(&c) {
+            if *v == 1 {
+                map.remove(&c);
+            } else {
+                map.insert(c, *v + 1);
+            }
+        } else {
+            map.insert(c, 1);
+        }
+    }
+
+    map.values().filter(|&v| *v % 2 == 1).count() <= 1
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1334,5 +1425,40 @@ mod tests {
     fn test_length_of_lis() {
         let res = vec![1, 3, 5, 4, 7, 9, 2, 5];
         assert_eq!(length_of_lis(res), 5);
+    }
+
+    #[test]
+    fn test_intersection() {
+        let res = vec![vec![3,1,2,4,5],vec![1,2,3,4],vec![3,4,5,6]];
+        assert_eq!(intersection(res), vec![3, 4]);
+    }
+
+    #[test]
+    fn test_is_unique() {
+        assert_eq!(is_unique("abcdefg".to_string()), true);
+        assert_eq!(is_unique("abcdefgf".to_string()), false);
+    }
+
+    #[test]
+    fn test_check_permutation() {
+        assert_eq!(check_permutation("abcdefg".to_string(), "abcdefg".to_string()), true);
+        assert_eq!(check_permutation("abcdefg".to_string(), "abcdefgf".to_string()), false);
+    }
+
+    #[test]
+    fn test_check_permutation2() {
+        assert_eq!(check_permutation2("abcdefg".to_string(), "abcdefg".to_string()), true);
+        assert_eq!(check_permutation2("abcdefg".to_string(), "abcdefgf".to_string()), false);
+    }
+
+    #[test]
+    fn test_replace_spaces() {
+        assert_eq!(replace_spaces("Mr John Smith    ".to_string(), 13), "Mr%20John%20Smith".to_string());
+    }
+
+    #[test]
+    fn test_can_permute_palindrome() {
+        assert_eq!(can_permute_palindrome("tactcoa".to_string()), true);
+        assert_eq!(can_permute_palindrome("tactcoaf".to_string()), false);
     }
 }
