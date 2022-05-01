@@ -202,6 +202,7 @@ pub fn group_anagram(strs: Vec<String>) -> Vec<Vec<String>> {
     map.values().map(|v| v.to_vec()).collect()
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct ListNode {
     pub val: i32,
     pub next: Option<Box<ListNode>>,
@@ -964,6 +965,130 @@ fn can_permute_palindrome(s: String) -> bool {
     map.values().filter(|&v| *v % 2 == 1).count() <= 1
 }
 
+fn remove_duplicate_nodes(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    let mut cur = head;
+    let mut set = HashSet::new();
+    let mut v = Vec::new();
+    while let Some(node) = cur {
+        if !set.contains(&node.val) {
+            set.insert(node.val);
+            v.push(node.val);
+        }
+        cur = node.next;
+    }
+
+    v.reverse();
+    let mut prev = None;
+    for i in v {
+        let node = Box::new(ListNode { val: i, next: prev });
+        prev = Some(node);
+    }
+
+    prev
+}
+
+pub fn is_fliped_string(s1: String, s2: String) -> bool {
+    s1.len() == s2.len() && s1.repeat(2).contains(&s2)
+}
+
+pub fn set_zeroes(matrix: &mut Vec<Vec<i32>>) {
+    let mut row = vec![false; matrix.len()];
+    let mut col = vec![false; matrix[0].len()];
+
+    for i in 0..matrix.len() {
+        for j in 0..matrix[0].len() {
+            if matrix[i][j] == 0 {
+                row[i] = true;
+                col[j] = true;
+            }
+        }
+    }
+
+    for i in 0..matrix.len() {
+        for j in 0..matrix[0].len() {
+            if row[i] || col[j] {
+                matrix[i][j] = 0;
+            }
+        }
+    }
+}
+
+pub fn rotate(matrix: &mut Vec<Vec<i32>>) {
+    if matrix.is_empty() {
+        return;
+    }
+    let col = matrix.len();
+    let row = matrix[0].len();
+
+    for i in 0..row / 2 {
+        for j in 0..col {
+            let tmp = matrix[i][j];
+            matrix[i][j] = matrix[row - 1 - i][j];
+            matrix[row - 1 - i][j] = tmp;
+        }
+    }
+
+    for i in 0..row {
+        for j in 0..i {
+            let tmp = matrix[i][j];
+            matrix[i][j] = matrix[j][i];
+            matrix[j][i] = tmp;
+        }
+    }
+}
+
+pub fn compress_string(s: String) -> String {
+    if s.is_empty() {
+        return s;
+    }
+    let mut res = String::new();
+    let mut count = 1;
+    let mut prev = s.chars().next().unwrap();
+    for c in s.chars().skip(1) {
+        if c == prev {
+            count += 1;
+        } else {
+            res.push(prev);
+            res.push_str(&count.to_string());
+            count = 1;
+            prev = c;
+        }
+    }
+    res.push(prev);
+    res.push_str(&count.to_string());
+    if res.len() >= s.len() {
+        s
+    } else {
+        res
+    }
+}
+
+fn one_edit_away(s1: String, s2: String) -> bool {
+    let mut i = 0;
+    let mut j = 0;
+    let mut count = 0;
+    while i < s1.len() && j < s2.len() {
+        if s1.chars().nth(i) == s2.chars().nth(j) {
+            i += 1;
+            j += 1;
+        } else {
+            count += 1;
+            if count > 1 {
+                return false;
+            }
+            if s1.len() > s2.len() {
+                i += 1;
+            } else if s1.len() < s2.len() {
+                j += 1;
+            } else {
+                i += 1;
+                j += 1;
+            }
+        }
+    }
+    count + (s1.len() - i) + (s2.len() - j) <= 2
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1429,7 +1554,7 @@ mod tests {
 
     #[test]
     fn test_intersection() {
-        let res = vec![vec![3,1,2,4,5],vec![1,2,3,4],vec![3,4,5,6]];
+        let res = vec![vec![3, 1, 2, 4, 5], vec![1, 2, 3, 4], vec![3, 4, 5, 6]];
         assert_eq!(intersection(res), vec![3, 4]);
     }
 
@@ -1441,24 +1566,130 @@ mod tests {
 
     #[test]
     fn test_check_permutation() {
-        assert_eq!(check_permutation("abcdefg".to_string(), "abcdefg".to_string()), true);
-        assert_eq!(check_permutation("abcdefg".to_string(), "abcdefgf".to_string()), false);
+        assert_eq!(
+            check_permutation("abcdefg".to_string(), "abcdefg".to_string()),
+            true
+        );
+        assert_eq!(
+            check_permutation("abcdefg".to_string(), "abcdefgf".to_string()),
+            false
+        );
     }
 
     #[test]
     fn test_check_permutation2() {
-        assert_eq!(check_permutation2("abcdefg".to_string(), "abcdefg".to_string()), true);
-        assert_eq!(check_permutation2("abcdefg".to_string(), "abcdefgf".to_string()), false);
+        assert_eq!(
+            check_permutation2("abcdefg".to_string(), "abcdefg".to_string()),
+            true
+        );
+        assert_eq!(
+            check_permutation2("abcdefg".to_string(), "abcdefgf".to_string()),
+            false
+        );
     }
 
     #[test]
     fn test_replace_spaces() {
-        assert_eq!(replace_spaces("Mr John Smith    ".to_string(), 13), "Mr%20John%20Smith".to_string());
+        assert_eq!(
+            replace_spaces("Mr John Smith    ".to_string(), 13),
+            "Mr%20John%20Smith".to_string()
+        );
     }
 
     #[test]
     fn test_can_permute_palindrome() {
         assert_eq!(can_permute_palindrome("tactcoa".to_string()), true);
         assert_eq!(can_permute_palindrome("tactcoaf".to_string()), false);
+    }
+
+    #[test]
+    fn test_remove_duplicate_nodes() {
+        let mut head = Option::Some(Box::new(ListNode::new(1)));
+        head.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(2)));
+        head.as_mut().unwrap().next.as_mut().unwrap().next =
+            Option::Some(Box::new(ListNode::new(3)));
+        head.as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next = Option::Some(Box::new(ListNode::new(3)));
+        let res = remove_duplicate_nodes(head);
+
+        let mut cur = res;
+        assert_eq!(cur.as_ref().unwrap().val, 1);
+        assert_eq!(cur.as_ref().unwrap().next.as_ref().unwrap().val, 2);
+        assert_eq!(
+            cur.as_ref()
+                .unwrap()
+                .next
+                .as_ref()
+                .unwrap()
+                .next
+                .as_ref()
+                .unwrap()
+                .val,
+            3
+        );
+        assert_eq!(
+            cur.as_ref()
+                .unwrap()
+                .next
+                .as_ref()
+                .unwrap()
+                .next
+                .as_ref()
+                .unwrap()
+                .next
+                .is_none(),
+            true
+        );
+    }
+
+    #[test]
+    fn test_is_fliped_string() {
+        assert_eq!(
+            is_fliped_string("waterbottle".to_string(), "erbottlewat".to_string()),
+            true
+        );
+        assert_eq!(
+            is_fliped_string("abcdefg".to_string(), "cbaefg".to_string()),
+            false
+        );
+    }
+
+    #[test]
+    fn test_set_zeroes() {
+        let mut matrix = vec![vec![1, 1, 1], vec![1, 0, 1], vec![1, 1, 1]];
+        set_zeroes(&mut matrix);
+        assert_eq!(matrix, vec![vec![1, 0, 1], vec![0, 0, 0], vec![1, 0, 1]]);
+    }
+
+    #[test]
+    fn test_rotate() {
+        let mut matrix = vec![vec![1, 2, 3], vec![4, 5, 6], vec![7, 8, 9]];
+        rotate(&mut matrix);
+        assert_eq!(matrix, vec![vec![7, 4, 1], vec![8, 5, 2], vec![9, 6, 3]]);
+    }
+
+    #[test]
+    fn test_compress_string() {
+        assert_eq!(
+            compress_string("aabcccccaaa".to_string()),
+            "a2b1c5a3".to_string()
+        );
+        assert_eq!(compress_string("a".to_string()), "a".to_string());
+        assert_eq!(compress_string("".to_string()), "".to_string());
+    }
+
+    #[test]
+    fn test_one_edit_away() {
+        assert_eq!(one_edit_away("pale".to_string(), "ple".to_string()), true);
+        assert_eq!(one_edit_away("pales".to_string(), "pale".to_string()), true);
+        assert_eq!(one_edit_away("pale".to_string(), "bale".to_string()), true);
+        assert_eq!(one_edit_away("pale".to_string(), "bake".to_string()), false);
     }
 }
