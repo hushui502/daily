@@ -1303,6 +1303,188 @@ fn get_intersection_node(
     None
 }
 
+struct TripleInOne {
+    d: Vec<i32>,
+    i: [usize; 3],
+}
+
+impl TripleInOne {
+    fn new(n: i32) -> Self {
+        TripleInOne {
+            d: vec![0; n as usize],
+            i: [0, 1, 2],
+        }
+    }
+
+    fn push(&mut self, stack_num: i32, value: i32) {
+        let n = stack_num as usize;
+        if self.i[n] < self.d.len() {
+            self.d[self.i[n]] = value;
+            self.i[n] += 3;
+        }
+    }
+
+    fn pop(&mut self, stack_num: i32) -> i32 {
+        match stack_num as usize {
+            n if self.i[n] >= 3 => {
+                self.i[n] -= 3;
+                self.d[self.i[n]]
+            }
+            _ => -1,
+        }
+    }
+}
+
+struct StackOfPlates {
+    inner: Vec<Vec<i32>>,
+    cap: usize,
+}
+
+impl StackOfPlates {
+    fn new(capacity: i32) -> Self {
+        StackOfPlates {
+            inner: Vec::new(),
+            cap: capacity as usize,
+        }
+    }
+
+    fn push(&mut self, val: i32) {
+        if self.cap == 0 {
+            return;
+        }
+        let last = self.inner.last_mut();
+        if let Some(v) = last {
+            if v.len() < self.cap {
+                v.push(val);
+                return;
+            }
+        }
+        let mut stack = Vec::with_capacity(self.cap);
+        stack.push(val);
+        self.inner.push(stack);
+    }
+
+    fn pop(&mut self) -> i32 {
+        let last = self.inner.last_mut();
+        if let Some(v) = last {
+            if let Some(val) = v.pop() {
+                if v.is_empty() {
+                    self.inner.pop();
+                }
+                return val;
+            }
+        }
+        -1
+    }
+
+    fn pop_at(&mut self, index: i32) -> i32 {
+        let stack = self.inner.get_mut(index as usize);
+        if let Some(vec_ref) = stack {
+            if let Some(val) = vec_ref.pop() {
+                if vec_ref.is_empty() {
+                    self.inner.remove(index as usize);
+                }
+                return val;
+            }
+        }
+        -1
+    }
+}
+
+struct MyQueue {
+    vec: VecDeque<i32>,
+}
+
+impl MyQueue {
+    /** Initialize your data structure here. */
+    fn new() -> Self {
+        MyQueue {
+            vec: VecDeque::new(),
+        }
+    }
+
+    /** Push element x to the back of queue. */
+    fn push(&mut self, x: i32) {
+        self.vec.push_back(x);
+    }
+
+    /** Removes the element from in front of queue and returns that element. */
+    fn pop(&mut self) -> i32 {
+        if self.vec.len() > 0 {
+            self.vec.pop_front().unwrap()
+        } else {
+            -1
+        }
+    }
+
+    /** Get the front element. */
+    fn peek(&self) -> i32 {
+        let l = self.vec.len();
+        if self.vec.len() > 0 {
+            self.vec[0]
+        } else {
+            -1
+        }
+    }
+
+    /** Returns whether the queue is empty. */
+    fn empty(&self) -> bool {
+        self.vec.is_empty()
+    }
+}
+
+pub fn find_whether_exists_path(n: i32, graph: Vec<Vec<i32>>, start: i32, target: i32) -> bool {
+    let mut visited = vec![false; n as usize];
+    visited[start as usize] = true;
+    let mut queue = VecDeque::new();
+    queue.push_back(start);
+    while !queue.is_empty() {
+        let cur = queue.pop_front().unwrap();
+        if cur == target {
+            return true;
+        }
+        for next in graph[cur as usize].iter() {
+            if !visited[*next as usize] {
+                visited[*next as usize] = true;
+                queue.push_back(*next);
+            }
+        }
+    }
+
+    false
+}
+
+pub fn is_balanced(root: Option<Rc<RefCell<TreeNode>>>) -> bool {
+    fn post_order(node: Option<Rc<RefCell<TreeNode>>>) -> i32 {
+        match node {
+            None => 0,
+            Some(node) => {
+                let left = post_order(node.borrow().left.clone());
+                let right = post_order(node.borrow().right.clone());
+                if left == -1 || right == -1 || (left - right).abs() > 1 {
+                    -1
+                } else {
+                    1 + left + right
+                }
+            }
+        }
+    }
+
+    post_order(root) != -1
+}
+
+fn sorted_array_to_bst(nums: Vec<i32>) -> Option<Rc<RefCell<TreeNode>>> {
+    if nums.is_empty() {
+        return None;
+    }
+    let mid = nums.len() / 2;
+    let mut root = TreeNode::new(nums[mid]);
+    root.left = sorted_array_to_bst(nums[..mid].to_vec());
+    root.right = sorted_array_to_bst(nums[mid + 1..].to_vec());
+
+    Some(Rc::new(RefCell::new(root)))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2163,5 +2345,15 @@ mod tests {
             get_intersection_node(l1, l2),
             Option::Some(Box::new(ListNode::new(7)))
         );
+    }
+
+    #[test]
+    fn test_find_whether_exists_path() {
+        let mut graph = vec![vec![]; 6];
+        graph[0] = vec![0, 1];
+        graph[1] = vec![0, 2];
+        graph[2] = vec![1, 2];
+        graph[3] = vec![1, 2];
+        assert_eq!(find_whether_exists_path(3, graph, 0, 2), true);
     }
 }
