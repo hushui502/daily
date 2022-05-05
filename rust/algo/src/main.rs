@@ -5,8 +5,109 @@ use std::fmt::format;
 use std::process::id;
 use std::rc::Rc;
 
+// 一个名为 `my_mod` 的模块
+mod my_mod {
+    // 模块中的项默认具有私有的可见性
+    fn private_function() {
+        println!("called `my_mod::private_function()`");
+    }
+
+    // 使用 `pub` 修饰语来改变默认可见性。
+    pub fn function() {
+        println!("called `my_mod::function()`");
+    }
+
+    // 在同一模块中，项可以访问其它项，即使它是私有的。
+    pub fn indirect_access() {
+        print!("called `my_mod::indirect_access()`, that\n> ");
+        private_function();
+    }
+
+    // 模块也可以嵌套
+    pub mod nested {
+        pub fn function() {
+            println!("called `my_mod::nested::function()`");
+        }
+
+        #[allow(dead_code)]
+        fn private_function() {
+            println!("called `my_mod::nested::private_function()`");
+        }
+
+        // 使用 `pub(in path)` 语法定义的函数只在给定的路径中可见。
+        // `path` 必须是父模块（parent module）或祖先模块（ancestor module）
+        pub(in crate::my_mod) fn public_function_in_my_mod() {
+            print!("called `my_mod::nested::public_function_in_my_mod()`, that\n > ");
+            public_function_in_nested()
+        }
+
+        // 使用 `pub(self)` 语法定义的函数则只在当前模块中可见。
+        pub(self) fn public_function_in_nested() {
+            println!("called `my_mod::nested::public_function_in_nested");
+        }
+
+        // 使用 `pub(super)` 语法定义的函数只在父模块中可见。
+        pub(super) fn public_function_in_super_mod() {
+            println!("called my_mod::nested::public_function_in_super_mod");
+        }
+    }
+
+    pub fn call_public_function_in_my_mod() {
+        print!("called `my_mod::call_public_funcion_in_my_mod()`, that\n> ");
+        nested::public_function_in_my_mod();
+        print!("> ");
+        nested::public_function_in_super_mod();
+    }
+
+    // `pub(crate)` 使得函数只在当前 crate 中可见
+    pub(crate) fn public_function_in_crate() {
+        println!("called `my_mod::public_function_in_crate()");
+    }
+
+    // 嵌套模块的可见性遵循相同的规则
+    mod private_nested {
+        #[allow(dead_code)]
+        pub fn function() {
+            println!("called `my_mod::private_nested::function()`");
+        }
+    }
+}
+
+fn function() {
+    println!("called `function()`");
+}
+
 fn main() {
-    println!("Hello, world!");
+    // 模块机制消除了相同名字的项之间的歧义。
+    function();
+    my_mod::function();
+
+    // 公有项，包括嵌套模块内的，都可以在父模块外部访问。
+    my_mod::indirect_access();
+    my_mod::nested::function();
+    my_mod::call_public_function_in_my_mod();
+
+    // pub(crate) 项可以在同一个 crate 中的任何地方访问
+    my_mod::public_function_in_crate();
+
+    // pub(in path) 项只能在指定的模块中访问
+    // 报错！函数 `public_function_in_my_mod` 是私有的
+    //my_mod::nested::public_function_in_my_mod();
+    // 试一试 ^ 取消该行的注释
+
+    // 模块的私有项不能直接访问，即便它是嵌套在公有模块内部的
+
+    // 报错！`private_function` 是私有的
+    //my_mod::private_function();
+    // 试一试 ^ 取消此行注释
+
+    // 报错！`private_function` 是私有的
+    //my_mod::nested::private_function();
+    // 试一试 ^ 取消此行的注释
+
+    // Error! `private_nested` is a private module
+    //my_mod::private_nested::function();
+    // 试一试 ^ 取消此行的注释
 }
 
 pub fn move_zeroes(nums: &mut Vec<i32>) {
@@ -1089,6 +1190,119 @@ fn one_edit_away(s1: String, s2: String) -> bool {
     count + (s1.len() - i) + (s2.len() - j) <= 2
 }
 
+fn kth_to_last(head: Option<Box<ListNode>>, k: i32) -> i32 {
+    let mut cur = &head;
+    let mut count = 0;
+    while let Some(node) = cur {
+        count += 1;
+        cur = &node.next;
+    }
+    if count < k {
+        return -1;
+    }
+    let mut cur = head;
+    for _ in 0..count - k {
+        cur = cur.unwrap().next;
+    }
+
+    cur.unwrap().val
+}
+
+fn delete_middle_node(node: &mut Box<ListNode>) {
+    let next = node.next.take();
+    *node = next.unwrap();
+}
+
+fn addTwoNumbers(l1: Option<Box<ListNode>>, l2: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+    let mut l1 = &l1;
+    let mut l2 = &l2;
+    let mut head = None;
+    let mut cur = &mut head;
+    let mut carry = 0;
+    while l1.is_some() || l2.is_some() || carry != 0 {
+        let mut sum = carry;
+        if let Some(n1) = l1.as_ref() {
+            sum += n1.val;
+            l1 = &n1.next;
+        }
+        if let Some(n2) = l2.as_ref() {
+            sum += n2.val;
+            l2 = &n2.next;
+        }
+        carry = sum / 10;
+        *cur = Option::Some(Box::new(ListNode::new(sum % 10)));
+        cur = &mut cur.as_mut().unwrap().next;
+    }
+
+    head
+}
+
+pub fn partition(head: Option<Box<ListNode>>, x: i32) -> Option<Box<ListNode>> {
+    let mut lower = Some(Box::new(ListNode::new(0)));
+    let mut higher = Some(Box::new(ListNode::new(0)));
+    let mut lower_cur = lower.as_mut();
+    let mut higher_cur = higher.as_mut();
+    let mut cur = head;
+
+    while let Some(mut node) = cur {
+        let mut next = node.next.take();
+        if node.val < x {
+            lower_cur.as_mut().unwrap().next = Some(node);
+            lower_cur = lower_cur.unwrap().next.as_mut();
+        } else {
+            higher_cur.as_mut().unwrap().next = Some(node);
+            higher_cur = higher_cur.unwrap().next.as_mut();
+        }
+        cur = next;
+    }
+
+    lower_cur.as_mut().unwrap().next = higher.unwrap().next;
+
+    lower.unwrap().next.take()
+}
+
+pub fn is_palindrome(head: Option<Box<ListNode>>) -> bool {
+    let mut cur = head;
+    let mut vals = Vec::new();
+    while let Some(node) = cur {
+        vals.push(node.val);
+        cur = node.next;
+    }
+
+    let mut i = 0;
+    let mut j = vals.len() - 1;
+    while i < j {
+        if vals[i] != vals[j] {
+            return false;
+        }
+        i += 1;
+        j -= 1;
+    }
+
+    true
+}
+
+fn get_intersection_node(
+    l1: Option<Box<ListNode>>,
+    l2: Option<Box<ListNode>>,
+) -> Option<Box<ListNode>> {
+    let mut l1 = &l1;
+    let mut l2 = &l2;
+    // let mut dummy = Some(Box::new(ListNode::new(0)));
+    while let Some(n1) = l1 {
+        let mut dummy = l2;
+        while let Some(n2) = dummy {
+            if n1 == n2 {
+                return Some(Box::new(ListNode::new(n1.val)));
+            }
+            dummy = &n2.next;
+        }
+        l1 = &n1.next;
+    }
+
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1691,5 +1905,263 @@ mod tests {
         assert_eq!(one_edit_away("pales".to_string(), "pale".to_string()), true);
         assert_eq!(one_edit_away("pale".to_string(), "bale".to_string()), true);
         assert_eq!(one_edit_away("pale".to_string(), "bake".to_string()), false);
+    }
+
+    #[test]
+    fn test_kth_to_last() {
+        let mut head = Option::Some(Box::new(ListNode::new(1)));
+        head.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(2)));
+        head.as_mut().unwrap().next.as_mut().unwrap().next =
+            Option::Some(Box::new(ListNode::new(3)));
+        head.as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next = Option::Some(Box::new(ListNode::new(4)));
+        head.as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next = Option::Some(Box::new(ListNode::new(5)));
+        assert_eq!(kth_to_last(head, 3), 3);
+    }
+
+    #[test]
+    fn test_delete_middle_node() {
+        let mut head = Option::Some(Box::new(ListNode::new(1)));
+        head.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(2)));
+        head.as_mut().unwrap().next.as_mut().unwrap().next =
+            Option::Some(Box::new(ListNode::new(3)));
+        head.as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next = Option::Some(Box::new(ListNode::new(4)));
+        head.as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next = Option::Some(Box::new(ListNode::new(5)));
+        delete_middle_node(head.as_mut().unwrap().next.as_mut().unwrap());
+        assert_eq!(
+            head,
+            Option::Some(Box::new(ListNode {
+                val: 1,
+                next: Option::Some(Box::new(ListNode {
+                    val: 3,
+                    next: Option::Some(Box::new(ListNode {
+                        val: 4,
+                        next: Option::Some(Box::new(ListNode {
+                            val: 5,
+                            next: Option::None
+                        }))
+                    }))
+                }))
+            }))
+        );
+
+        let mut head = Option::Some(Box::new(ListNode::new(1)));
+        head.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(2)));
+        head.as_mut().unwrap().next.as_mut().unwrap().next =
+            Option::Some(Box::new(ListNode::new(3)));
+        head.as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next = Option::Some(Box::new(ListNode::new(4)));
+        head.as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next = Option::Some(Box::new(ListNode::new(5)));
+        delete_middle_node(
+            head.as_mut()
+                .unwrap()
+                .next
+                .as_mut()
+                .unwrap()
+                .next
+                .as_mut()
+                .unwrap(),
+        );
+        assert_eq!(
+            head,
+            Option::Some(Box::new(ListNode {
+                val: 1,
+                next: Option::Some(Box::new(ListNode {
+                    val: 2,
+                    next: Option::Some(Box::new(ListNode {
+                        val: 4,
+                        next: Option::Some(Box::new(ListNode {
+                            val: 5,
+                            next: Option::None
+                        }))
+                    }))
+                }))
+            }))
+        );
+    }
+
+    #[test]
+    fn test_addTwoNumbers() {
+        let mut l1 = Option::Some(Box::new(ListNode::new(2)));
+        l1.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(4)));
+        l1.as_mut().unwrap().next.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(3)));
+        let mut l2 = Option::Some(Box::new(ListNode::new(5)));
+        l2.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(6)));
+        l2.as_mut().unwrap().next.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(4)));
+        let mut result = addTwoNumbers(l1, l2);
+        assert_eq!(result.as_mut().unwrap().val, 7);
+        assert_eq!(result.as_mut().unwrap().next.as_mut().unwrap().val, 0);
+        assert_eq!(
+            result
+                .as_mut()
+                .unwrap()
+                .next
+                .as_mut()
+                .unwrap()
+                .next
+                .as_mut()
+                .unwrap()
+                .val,
+            8
+        );
+        assert_eq!(
+            result
+                .as_mut()
+                .unwrap()
+                .next
+                .as_mut()
+                .unwrap()
+                .next
+                .as_mut()
+                .unwrap()
+                .next,
+            None
+        );
+    }
+
+    #[test]
+    fn test_partition() {
+        assert_eq!(
+            partition(
+                Option::Some(Box::new(ListNode {
+                    val: 1,
+                    next: Option::Some(Box::new(ListNode {
+                        val: 4,
+                        next: Option::Some(Box::new(ListNode {
+                            val: 2,
+                            next: Option::None
+                        }))
+                    }))
+                })),
+                3
+            ),
+            Option::Some(Box::new(ListNode {
+                val: 1,
+                next: Option::Some(Box::new(ListNode {
+                    val: 2,
+                    next: Option::Some(Box::new(ListNode {
+                        val: 4,
+                        next: Option::None
+                    }))
+                }))
+            }))
+        );
+    }
+
+    #[test]
+    fn test_is_palindrome() {
+        assert_eq!(
+            is_palindrome(Option::Some(Box::new(ListNode {
+                val: 1,
+                next: Option::Some(Box::new(ListNode {
+                    val: 2,
+                    next: Option::Some(Box::new(ListNode {
+                        val: 2,
+                        next: Option::Some(Box::new(ListNode {
+                            val: 1,
+                            next: Option::None
+                        }))
+                    }))
+                }))
+            }))),
+            true
+        );
+        assert_eq!(
+            is_palindrome(Option::Some(Box::new(ListNode {
+                val: 1,
+                next: Option::Some(Box::new(ListNode {
+                    val: 2,
+                    next: Option::Some(Box::new(ListNode {
+                        val: 2,
+                        next: Option::Some(Box::new(ListNode {
+                            val: 1,
+                            next: Option::Some(Box::new(ListNode {
+                                val: 3,
+                                next: Option::None
+                            }))
+                        }))
+                    }))
+                }))
+            }))),
+            false
+        );
+    }
+
+    #[test]
+    fn test_get_intersection_node() {
+        let mut l1 = Option::Some(Box::new(ListNode::new(1)));
+        l1.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(2)));
+        l1.as_mut().unwrap().next.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(7)));
+        let mut l2 = Option::Some(Box::new(ListNode::new(4)));
+        l2.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(2)));
+        l2.as_mut().unwrap().next.as_mut().unwrap().next = Option::Some(Box::new(ListNode::new(6)));
+        l2.as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next
+            .as_mut()
+            .unwrap()
+            .next = Option::Some(Box::new(ListNode::new(7)));
+        assert_eq!(
+            get_intersection_node(l1, l2),
+            Option::Some(Box::new(ListNode::new(7)))
+        );
     }
 }
