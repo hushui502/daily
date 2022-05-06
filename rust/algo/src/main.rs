@@ -5,6 +5,28 @@ use std::fmt::format;
 use std::process::id;
 use std::rc::Rc;
 
+mod case {
+    use std::fmt;
+    use std::fmt::Formatter;
+    use std::io::Read;
+
+    pub struct BuffReader<R> {
+        inner: R,
+        buf: Box<[u8]>,
+        pos: usize,
+        cap: usize,
+    }
+
+    impl<R> fmt::Debug for BuffReader<R>
+    where
+        R: fmt::Debug,
+    {
+        fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+            todo!()
+        }
+    }
+}
+
 // 一个名为 `my_mod` 的模块
 mod my_mod {
     // 模块中的项默认具有私有的可见性
@@ -1483,6 +1505,25 @@ fn sorted_array_to_bst(nums: Vec<i32>) -> Option<Rc<RefCell<TreeNode>>> {
     root.right = sorted_array_to_bst(nums[mid + 1..].to_vec());
 
     Some(Rc::new(RefCell::new(root)))
+}
+
+struct RecentCounter {
+    q: VecDeque<i32>,
+}
+
+impl RecentCounter {
+    fn new() -> Self {
+        RecentCounter { q: VecDeque::new() }
+    }
+
+    fn ping(&mut self, t: i32) -> i32 {
+        self.q.push_back(t);
+        while self.q.len() > 0 && t - self.q.front().unwrap() > 3000 {
+            self.q.pop_front();
+        }
+
+        self.q.len() as i32
+    }
 }
 
 #[cfg(test)]
