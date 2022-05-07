@@ -1526,6 +1526,41 @@ impl RecentCounter {
     }
 }
 
+pub fn min_mutation(start: &str, end: &str, bank: Vec<&str>) -> i32 {
+    let mut bank = bank;
+    bank.sort();
+    let mut queue = VecDeque::new();
+    queue.push_back(start);
+    let mut visited = vec![false; bank.len()];
+    let mut step = 0;
+    while !queue.is_empty() {
+        let cur = queue.pop_front().unwrap();
+        if cur == end {
+            return step;
+        }
+        for i in 0..bank.len() {
+            if !visited[i] && is_one_difference(&cur, &bank[i]) {
+                visited[i] = true;
+                queue.push_back(bank[i].clone());
+            }
+        }
+        step += 1;
+    }
+
+    -1
+}
+
+fn is_one_difference(s: &str, t: &str) -> bool {
+    let mut diff = 0;
+    for i in 0..s.len() {
+        if s.as_bytes()[i] != t.as_bytes()[i] {
+            diff += 1;
+        }
+    }
+
+    diff == 1
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2396,5 +2431,11 @@ mod tests {
         graph[2] = vec![1, 2];
         graph[3] = vec![1, 2];
         assert_eq!(find_whether_exists_path(3, graph, 0, 2), true);
+    }
+
+    #[test]
+    fn test_min_mutation() {
+        assert_eq!(min_mutation("AACCGGTT", "AACCGGTA", vec!["AACCGGTA"]), 1);
+        assert_eq!(min_mutation("AACCGGTT", "AAACGGTA", vec!["AACCGGTA", "AACCGCTA", "AAACGGTA"]), 2);
     }
 }
