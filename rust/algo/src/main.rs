@@ -1561,6 +1561,22 @@ fn is_one_difference(s: &str, t: &str) -> bool {
     diff == 1
 }
 
+fn find_duplicates(nums: Vec<i32>) -> Vec<i32> {
+    let mut nums = nums;
+    nums.sort();
+    let mut res = vec![];
+    for i in 0..nums.len() - 1 {
+        if nums[i] == nums[i + 1] {
+            res.push(nums[i]);
+        }
+    }
+
+    res
+}
+
+
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2437,5 +2453,10 @@ mod tests {
     fn test_min_mutation() {
         assert_eq!(min_mutation("AACCGGTT", "AACCGGTA", vec!["AACCGGTA"]), 1);
         assert_eq!(min_mutation("AACCGGTT", "AAACGGTA", vec!["AACCGGTA", "AACCGCTA", "AAACGGTA"]), 2);
+    }
+
+    #[test]
+    fn test_find_duplicates() {
+        assert_eq!(find_duplicates(vec![1, 2, 3, 1]), vec![1]);
     }
 }
