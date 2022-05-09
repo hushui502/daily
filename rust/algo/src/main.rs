@@ -1,4 +1,3 @@
-use std::borrow::BorrowMut;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::format;
@@ -1594,8 +1593,56 @@ fn di_string_match(s: String) -> Vec<i32> {
     res
 }
 
+pub fn get_all_elements(root1: Option<Rc<RefCell<TreeNode>>>, root2: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+    let mut ans = vec![];
 
+    inorder(&root1, &mut ans);
+    inorder(&root2, &mut ans);
 
+    ans.sort();
+
+    ans
+}
+
+fn inorder(root: &Option<Rc<RefCell<TreeNode>>>, vec: &mut Vec<i32>) {
+    if let Some(r) = root {
+        inorder(&r.borrow().left, vec);
+        vec.push(r.borrow().val);
+        inorder(&r.borrow().right, vec);
+    }
+}
+
+pub fn reorder_log_files(mut logs: Vec<String>) -> Vec<String> {
+    use std::cmp::Ordering;
+    logs.sort_by(|a, b| {
+        let (s1, s2) = (a.splitn(2, ' ').collect::<Vec<_>>(), b.splitn(2, ' ').collect::<Vec<_>>());
+        match (s1[1].as_bytes()[0].is_ascii_digit(), s2[1].as_bytes()[0].is_ascii_digit()) {
+            (true, true) => Ordering::Equal,
+            (false, false) => (s1[1], s1[0]).cmp(&(s2[1], s2[0])),
+            (true, false) => Ordering::Greater,
+            (false, true) => Ordering::Less,
+        }
+    });
+
+    logs
+}
+
+pub fn num_subarray_product_less_than_k(nums: Vec<i32>, k: i32) -> i32 {
+    let (mut left,mut right) = (0 as usize, 0 as usize);
+    let (mut res,mut mult) = (0 as i32, 1);
+
+    while right < nums.len() {
+        mult *= nums[right];
+        while left <= right && mult >= k {
+            mult /= nums[left];
+            left += 1;
+        }
+        res += (right as i32 - left as i32) + 1i32;
+        right += 1;
+    }
+
+    res
+}
 
 #[cfg(test)]
 mod tests {
@@ -2484,5 +2531,39 @@ mod tests {
     fn test_di_string_match() {
         assert_eq!(di_string_match("IDID".to_string()), vec![0, 4, 1, 3, 2]);
         assert_eq!(di_string_match("III".to_string()), vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn test_get_all_elements() {
+        assert_eq!(get_all_elements(Some(Rc::new(RefCell::new(TreeNode::new(1)))),
+                                    Some(Rc::new(RefCell::new(TreeNode::new(2))))),
+                               vec![1, 2]);
+        assert_eq!(get_all_elements(None, None), vec![]);
+        assert_eq!(get_all_elements(Some(Rc::new(RefCell::new(TreeNode::new(1)))), None), vec![1]);
+        assert_eq!(get_all_elements(Some(Rc::new(RefCell::new(TreeNode{
+            val: 1,
+            left: Some(Rc::new(RefCell::new(TreeNode::new(2)))),
+            right: Some(Rc::new(RefCell::new(TreeNode::new(3))))
+        }))), Some(Rc::new(RefCell::new(TreeNode{
+            val: 1,
+            left: Some(Rc::new(RefCell::new(TreeNode::new(2)))),
+            right: Some(Rc::new(RefCell::new(TreeNode::new(3))))
+        })))), vec![1, 1, 2, 2, 3, 3]);
+    }
+
+    #[test]
+    fn test_reorder_log_files() {
+        assert_eq!(reorder_log_files(vec!["a1 9 2 3 1".to_string(), "g1 act car".to_string(), "zo4 4 7".to_string(), "ab1 off key dog".to_string(), "a8 act zoo".to_string()]),
+                   vec!["g1 act car".to_string(), "a8 act zoo".to_string(), "ab1 off key dog".to_string(), "a1 9 2 3 1".to_string(), "zo4 4 7".to_string()]);
+
+        assert_eq!(reorder_log_files(vec!["a1 9 2 3 1".to_string(), "g1 act car".to_string(), "zo4 4 7".to_string(), "ab1 off key dog".to_string(), "a8 act zoo".to_string(), "a1 9 2 3 1".to_string()]),
+                   vec!["g1 act car".to_string(), "a8 act zoo".to_string(), "ab1 off key dog".to_string(), "a1 9 2 3 1".to_string(), "zo4 4 7".to_string(), "a1 9 2 3 1".to_string()]);
+
+    }
+
+    #[test]
+    fn test_num_subarray_product_less_than_k() {
+        assert_eq!(num_subarray_product_less_than_k(vec![10, 5, 2, 6], 100), 8);
+        assert_eq!(num_subarray_product_less_than_k(vec![1, 2, 3], 0), 0);
     }
 }
