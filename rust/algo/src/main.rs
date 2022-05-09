@@ -1574,6 +1574,26 @@ fn find_duplicates(nums: Vec<i32>) -> Vec<i32> {
     res
 }
 
+fn di_string_match(s: String) -> Vec<i32> {
+    let mut res = vec![];
+    let (mut left, mut right) = (0, s.len() as i32);
+    for c in s.chars() {
+        match c {
+            'I' => {
+                res.push(left);
+                left += 1;
+            }
+            _ => {
+                res.push(right);
+                right -= 1;
+            }
+        }
+    }
+    res.push(left);
+
+    res
+}
+
 
 
 
@@ -2458,5 +2478,11 @@ mod tests {
     #[test]
     fn test_find_duplicates() {
         assert_eq!(find_duplicates(vec![1, 2, 3, 1]), vec![1]);
+    }
+
+    #[test]
+    fn test_di_string_match() {
+        assert_eq!(di_string_match("IDID".to_string()), vec![0, 4, 1, 3, 2]);
+        assert_eq!(di_string_match("III".to_string()), vec![0, 1, 2, 3]);
     }
 }
