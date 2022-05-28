@@ -1644,6 +1644,42 @@ pub fn num_subarray_product_less_than_k(nums: Vec<i32>, k: i32) -> i32 {
     res
 }
 
+// pub fn remove_outer_parentheses(s: String) -> String {
+//     let mut res = String::new();
+//     let mut count = 0;
+//     for c in s.chars() {
+//         if c == '(' {
+//             count += 1;
+//             if count > 1 {
+//                 res.push(c);
+//             }
+//         } else {
+//             count -= 1;
+//             if count > 0 {
+//                 res.push(c);
+//             }
+//         }
+//
+//     }
+//
+//     res
+// }
+
+pub fn remove_outer_parentheses(s: String) -> String {
+    let mut count = 0;
+    s.chars().filter(|&c| match c {
+        '(' => {
+            count += 1;
+            count > 1
+        }
+        ')' => {
+            count -= 1;
+            count > 0
+        }
+        _ => false,
+    }).collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2565,5 +2601,12 @@ mod tests {
     fn test_num_subarray_product_less_than_k() {
         assert_eq!(num_subarray_product_less_than_k(vec![10, 5, 2, 6], 100), 8);
         assert_eq!(num_subarray_product_less_than_k(vec![1, 2, 3], 0), 0);
+    }
+
+    #[test]
+    fn test_remove_outer_parentheses() {
+        assert_eq!(remove_outer_parentheses("(()())(())".to_string()), "()()()".to_string());
+        assert_eq!(remove_outer_parentheses("(()())(())(()(()))".to_string()), "()()()()(())".to_string());
+        assert_eq!(remove_outer_parentheses("()()".to_string()), "".to_string());
     }
 }
