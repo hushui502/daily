@@ -1680,6 +1680,20 @@ pub fn remove_outer_parentheses(s: String) -> String {
     }).collect()
 }
 
+fn consecutive_numbers_sum(n: i32) -> i32 {
+    let mut ans = 0;
+    let mut c = 1;
+    let mut n = n;
+    while n > 0 {
+        n -= c;
+        if n % c == 0 {
+            ans += 1;
+        }
+        c += 1;
+    }
+    ans
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2608,5 +2622,11 @@ mod tests {
         assert_eq!(remove_outer_parentheses("(()())(())".to_string()), "()()()".to_string());
         assert_eq!(remove_outer_parentheses("(()())(())(()(()))".to_string()), "()()()()(())".to_string());
         assert_eq!(remove_outer_parentheses("()()".to_string()), "".to_string());
+    }
+
+    #[test]
+    fn test_consecutive_numbers_sum() {
+        assert_eq!(consecutive_numbers_sum(3), 2);
+        assert_eq!(consecutive_numbers_sum(5), 2);
     }
 }
