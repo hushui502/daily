@@ -1,6 +1,7 @@
-package leetcode
+package main
 
 import (
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -64,4 +65,12 @@ func TestlongestPalindrome(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestFilePath(t *testing.T) {
+	path, err := filepath.Abs("solution_01_test.go")
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(path)
 }

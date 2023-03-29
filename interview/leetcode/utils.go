@@ -1,4 +1,4 @@
-package leetcode
+package main
 
 type ListNode struct {
 	Val  int
@@ -57,5 +57,6 @@ func partition(nums []int, left, right int) int {
 		}
 	}
 	nums[i], nums[right] = nums[right], nums[i]
+
 	return i
 }

@@ -1,4 +1,4 @@
-package leetcode
+package main
 
 func addTwoNumbers(l1, l2 *ListNode) *ListNode {
 	if l1 == nil {
