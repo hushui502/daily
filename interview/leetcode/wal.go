@@ -1,4 +1,4 @@
-package main
+package leetcode
 
 import (
 	"bytes"
@@ -45,14 +45,14 @@ var (
 	ErrOutOfRange = errors.New("out of range")
 )
 
-// LogFormat is the format of the log files.
+// LogFormat is the usd of the log files.
 type LogFormat byte
 
 const (
-	// Binary format writes entries in binary. This is the default and, unless
+	// Binary usd writes entries in binary. This is the default and, unless
 	// a good reason otherwise, should be used in production.
 	Binary LogFormat = 0
-	// JSON format writes entries as JSON lines. This causes larger, human
+	// JSON usd writes entries as JSON lines. This causes larger, human
 	// readable files.
 	JSON LogFormat = 1
 )
@@ -65,7 +65,7 @@ type Options struct {
 	// SegmentSize of each segment. This is just a target value, actual size
 	// may differ. Default is 20 MB.
 	SegmentSize int
-	// LogFormat is the format of the log files. Default is Binary.
+	// LogFormat is the usd of the log files. Default is Binary.
 	LogFormat LogFormat
 	// SegmentCacheSize is the maximum number of segments that will be held in
 	// memory for caching. Increasing this value may enhance performance for
@@ -85,7 +85,7 @@ type Options struct {
 var DefaultOptions = &Options{
 	NoSync:           false,    // Fsync after every write
 	SegmentSize:      20971520, // 20 MB log segment files.
-	LogFormat:        Binary,   // Binary format is small and fast.
+	LogFormat:        Binary,   // Binary usd is small and fast.
 	SegmentCacheSize: 2,        // Number of cached in-memory segments
 	NoCopy:           false,    // Make a new copy of data for every Read call.
 	DirPerms:         0750,     // Permissions for the created directories

@@ -1,4 +1,4 @@
-package main
+package leetcode
 
 import "strconv"
 
@@ -10,6 +10,8 @@ type Play struct {
 type Performance struct {
 	playID   string
 	audience int
+	amount   int
+	play     Play
 }
 
 type Invoice struct {
@@ -17,65 +19,39 @@ type Invoice struct {
 	performances []Performance
 }
 
-var (
-	plays = map[string]Play{
-		"hamlet":    {"Hamlet", "tragedy"},
-		"as-like":   {"As You Like It", "comedy"},
-		"othello":   {"Othello", "tragedy"},
-		"king lear": {"King Lear", "tragedy"},
+type statementData struct {
+	customer           string
+	performances       []Performance
+	totalAmount        int
+	totalVolumeCredits int
+}
+
+func htmlStatement(invoice Invoice) string {
+	return renderHtml(createStatementData(invoice))
+}
+
+func renderHtml(data statementData) string {
+	result := "<h1>Statement for " + data.customer + "</h1>\n"
+	result += "<table>\n"
+	result += "<tr><th>play</th><th>seats</th><th>cost</th></tr>"
+
+	for _, perf := range data.performances {
+		// print line for this order
+		result += " <tr><td>" + perf.play.name + "</td><td>" + strconv.Itoa(perf.audience) + "</td>"
+		result += "<td>" + usd(float64(perf.amount)) + "</td></tr>\n"
 	}
-)
+
+	result += "</table>\n"
+	result += "<p>Amount owed is <em>" + usd(float64(data.totalAmount)) + "</em></p>\n"
+	result += "<p>You earned <em>" + strconv.Itoa(data.totalVolumeCredits) + "</em> credits</p>\n"
+
+	return result
+}
 
 func statement(invoice Invoice) string {
-	var totalAmount float64
-	var volumeCredits int
-	result := "Statement for " + invoice.customer + ""
-
-	for _, perf := range invoice.performances {
-		thisAmount := amountFor(perf, playFor(perf))
-
-		// add volume credits
-		volumeCredits += max(perf.audience-30, 0)
-		// add extra credit for every ten comedy attendees
-		if "comedy" == playFor(perf).playType {
-			volumeCredits += int(perf.audience / 5)
-		}
-		// print line for this order
-		result += " " + playFor(perf).name + ": " + format(thisAmount/100) + " (" + strconv.Itoa(perf.audience) + " seats)"
-		totalAmount += thisAmount
-	}
-
-	result += "Amount owed is " + format(totalAmount/100)
-	result += "You earned " + strconv.Itoa(volumeCredits) + " credits"
-	return result
+	return renderPlainText(createStatementData(invoice))
 }
 
-func format(amount float64) string {
+func usd(amount float64) string {
 	return "$" + strconv.Itoa(int(amount/100)) + ".00"
-}
-
-func playFor(aPerformance Performance) Play {
-	return plays[aPerformance.playID]
-}
-
-func amountFor(aPerformance Performance, play Play) float64 {
-	result := 0.0
-
-	switch play.playType {
-	case "tragedy":
-		result = 40000
-		if aPerformance.audience > 30 {
-			result += 1000 * float64(aPerformance.audience-30)
-		}
-	case "comedy":
-		result = 30000
-		if aPerformance.audience > 20 {
-			result += 10000 + 500*float64(aPerformance.audience-20)
-		}
-		result += 300 * float64(aPerformance.audience)
-	default:
-		panic("unknown type: " + play.playType)
-	}
-
-	return result
 }

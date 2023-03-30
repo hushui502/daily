@@ -1,44 +1,9 @@
-package main
+package leetcode
 
 import (
 	"reflect"
 	"testing"
 )
-
-func Test_amountFor(t *testing.T) {
-	type args struct {
-		aPerformance Performance
-		play         Play
-	}
-	tests := []struct {
-		name string
-		args args
-		want float64
-	}{
-		// TODO: Add test cases.
-		{
-			name: "test1",
-			args: args{
-				aPerformance: Performance{
-					playID:   "hamlet",
-					audience: 55,
-				},
-				play: Play{
-					name:     "Hamlet",
-					playType: "tragedy",
-				},
-			},
-			want: 65000,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := amountFor(tt.args.aPerformance, tt.args.play); got != tt.want {
-				t.Errorf("amountFor() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func Test_format(t *testing.T) {
 	type args struct {
@@ -65,8 +30,8 @@ func Test_format(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := format(tt.args.amount); got != tt.want {
-				t.Errorf("format() = %v, want %v", got, tt.want)
+			if got := usd(tt.args.amount); got != tt.want {
+				t.Errorf("usd() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -149,6 +114,36 @@ You earned 47 credits
 		t.Run(tt.name, func(t *testing.T) {
 			if got := statement(tt.args.invoice); got != tt.want {
 				t.Errorf("statement() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_amountFor(t *testing.T) {
+	type args struct {
+		aPerformance Performance
+	}
+	tests := []struct {
+		name string
+		args args
+		want float64
+	}{
+		// TODO: Add test cases.
+		{
+			name: "test1",
+			args: args{
+				aPerformance: Performance{
+					playID:   "hamlet",
+					audience: 55,
+				},
+			},
+			want: 65000,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := amountFor(tt.args.aPerformance); got != tt.want {
+				t.Errorf("amountFor() = %v, want %v", got, tt.want)
 			}
 		})
 	}

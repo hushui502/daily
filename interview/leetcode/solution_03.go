@@ -1,4 +1,4 @@
-package main
+package leetcode
 
 func lengthOfLongestSubstring(s string) int {
 	if len(s) == 0 {
