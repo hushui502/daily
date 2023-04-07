@@ -450,38 +450,137 @@ func maxSubArray(nums []int) int {
 }
 
 func threeSum(nums []int) [][]int {
+	if len(nums) == 0 {
+		return [][]int{}
+	}
+
+	m := make(map[int]int)
+	for _, v := range nums {
+		m[v]++
+	}
+
+	var keys []int
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
 	var res [][]int
-	sort.Ints(nums)
 
-	for i := 0; i < len(nums)-2; i++ {
-		if i > 0 && nums[i] == nums[i-1] {
-			continue
+	for i := 0; i < len(keys); i++ {
+		if keys[i]*3 == 0 && m[keys[i]] >= 3 {
+			res = append(res, []int{keys[i], keys[i], keys[i]})
 		}
-
-		l, r := i+1, len(nums)-1
-
-		for l < r {
-			sum := nums[i] + nums[l] + nums[r]
-
-			if sum == 0 {
-				res = append(res, []int{nums[i], nums[l], nums[r]})
-				l++
-				r--
-
-				for l < r && nums[l] == nums[l-1] {
-					l++
-				}
-
-				for l < r && nums[r] == nums[r+1] {
-					r--
-				}
-			} else if sum < 0 {
-				l++
-			} else {
-				r--
+		for j := i + 1; j < len(keys); j++ {
+			if keys[i]*2+keys[j] == 0 && m[keys[i]] >= 2 {
+				res = append(res, []int{keys[i], keys[i], keys[j]})
+			}
+			if keys[j]*2+keys[i] == 0 && m[keys[j]] >= 2 {
+				res = append(res, []int{keys[j], keys[j], keys[i]})
+			}
+			c := 0 - keys[i] - keys[j]
+			if c < keys[i] && m[c] >= 1 {
+				res = append(res, []int{keys[i], keys[j], c})
 			}
 		}
 	}
 
 	return res
+}
+
+func permute(nums []int) [][]int {
+	var res [][]int
+	permuteHelper(nums, 0, &res)
+
+	return res
+}
+
+func permuteHelper(nums []int, start int, res *[][]int) {
+	if start == len(nums) {
+		*res = append(*res, append([]int{}, nums...))
+		return
+	}
+
+	for i := start; i < len(nums); i++ {
+		nums[i], nums[start] = nums[start], nums[i]
+		permuteHelper(nums, start+1, res)
+		nums[i], nums[start] = nums[start], nums[i]
+	}
+}
+
+func getIntersectionNode(headA, headB *ListNode) *ListNode {
+	if headA == nil || headB == nil {
+		return nil
+	}
+
+	a, b := headA, headB
+
+	for a != b {
+		if a == nil {
+			a = headB
+		} else {
+			a = a.Next
+		}
+
+		if b == nil {
+			b = headA
+		} else {
+			b = b.Next
+		}
+	}
+
+	return a
+}
+
+func spiralOrder(matrix [][]int) []int {
+	if len(matrix) == 0 {
+		return nil
+	}
+
+	var res []int
+	left, right, top, bottom := 0, len(matrix[0])-1, 0, len(matrix)-1
+
+	for left <= right && top <= bottom {
+		for i := left; i <= right; i++ {
+			res = append(res, matrix[top][i])
+		}
+
+		for i := top + 1; i <= bottom; i++ {
+			res = append(res, matrix[i][right])
+		}
+
+		for i := right - 1; i >= left && top != bottom; i-- {
+			res = append(res, matrix[bottom][i])
+		}
+
+		for i := bottom - 1; i > top && left != right; i-- {
+			res = append(res, matrix[i][left])
+		}
+
+		left++
+		right--
+		top++
+		bottom--
+	}
+
+	return res
+}
+
+func reverseBetween(head *ListNode, left int, right int) *ListNode {
+	dummy := &ListNode{Next: head}
+	pre := dummy
+
+	for i := 0; i < left-1; i++ {
+		pre = pre.Next
+	}
+
+	cur := pre.Next
+	for i := 0; i < right-left; i++ {
+		next := cur.Next
+		cur.Next = next.Next
+		next.Next = pre.Next
+		pre.Next = next
+	}
+
+	return dummy.Next
 }
