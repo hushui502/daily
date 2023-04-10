@@ -584,3 +584,176 @@ func reverseBetween(head *ListNode, left int, right int) *ListNode {
 
 	return dummy.Next
 }
+
+func mergeKLists(lists []*ListNode) *ListNode {
+	if len(lists) == 0 {
+		return nil
+	}
+	if len(lists) == 1 {
+		return lists[0]
+	}
+
+	return mergeTwoLists(mergeKLists(lists[:len(lists)/2]), mergeKLists(lists[len(lists)/2:]))
+}
+
+func addStrings(num1 string, num2 string) string {
+	var res []byte
+	i, j := len(num1)-1, len(num2)-1
+	carry := 0
+
+	for i >= 0 || j >= 0 {
+		var x, y int
+
+		if i >= 0 {
+			x = int(num1[i] - '0')
+			i--
+		}
+
+		if j >= 0 {
+			y = int(num2[j] - '0')
+			j--
+		}
+
+		sum := x + y + carry
+		res = append(res, byte(sum%10+'0'))
+		carry = sum / 10
+	}
+
+	if carry > 0 {
+		res = append(res, byte(carry+'0'))
+	}
+
+	reverse(res)
+
+	return string(res)
+}
+
+func reverse(nums []byte) {
+	for i, j := 0, len(nums)-1; i < j; i, j = i+1, j-1 {
+		nums[i], nums[j] = nums[j], nums[i]
+	}
+}
+
+func detectCycle(head *ListNode) *ListNode {
+	if head == nil {
+		return nil
+	}
+
+	slow, fast := head, head
+
+	for fast != nil && fast.Next != nil {
+		slow = slow.Next
+		fast = fast.Next.Next
+
+		if slow == fast {
+			break
+		}
+	}
+
+	if fast == nil || fast.Next == nil {
+		return nil
+	}
+
+	slow = head
+	for slow != fast {
+		slow = slow.Next
+		fast = fast.Next
+	}
+
+	return slow
+}
+
+// todo 未完成
+func mergeArrays(intervals [][]int) [][]int {
+	if len(intervals) == 0 {
+		return nil
+	}
+
+	sort.Slice(intervals, func(i, j int) bool {
+		return intervals[i][0] < intervals[j][0]
+	})
+
+	var res [][]int
+	res = append(res, intervals[0])
+
+	for i := 1; i < len(intervals); i++ {
+		if intervals[i][0] <= res[len(res)-1][1] {
+			res[len(res)-1][1] = max(intervals[i][1], res[len(res)-1][1])
+		} else {
+			res = append(res, intervals[i])
+		}
+	}
+
+	return res
+}
+
+func rightSideView(root *TreeNode) []int {
+	if root == nil {
+		return nil
+	}
+
+	var res []int
+	q := []*TreeNode{root}
+
+	for len(q) > 0 {
+		res = append(res, q[len(q)-1].Val)
+
+		var next []*TreeNode
+		for _, node := range q {
+			if node.Left != nil {
+				next = append(next, node.Left)
+			}
+			if node.Right != nil {
+				next = append(next, node.Right)
+			}
+		}
+
+		q = next
+	}
+
+	return res
+}
+
+func lengthOfLIS(nums []int) int {
+	if len(nums) == 0 {
+		return 0
+	}
+
+	dp := make([]int, len(nums))
+	dp[0] = 1
+
+	for i := 1; i < len(nums); i++ {
+		dp[i] = 1
+		for j := 0; j < i; j++ {
+			if nums[i] > nums[j] {
+				dp[i] = max(dp[i], dp[j]+1)
+			}
+		}
+	}
+
+	return max(dp...)
+}
+
+func trap(height []int) int {
+	if len(height) == 0 {
+		return 0
+	}
+
+	var res int
+	left, right := 0, len(height)-1
+	leftMax, rightMax := height[left], height[right]
+
+	for left < right {
+		if height[left] < height[right] {
+			left++
+			leftMax = max(leftMax, height[left])
+			res += leftMax - height[left]
+		} else {
+			right--
+			rightMax = max(rightMax, height[right])
+			res += rightMax - height[right]
+		}
+	}
+
+	return res
+}
